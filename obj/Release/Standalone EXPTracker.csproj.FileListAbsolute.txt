@@ -1,0 +1,8 @@
+I:\DRealms\Plugin Dev\Standalone ExpTracker\bin\Release\Standalone EXPTracker.dll
+I:\DRealms\Plugin Dev\Standalone ExpTracker\bin\Release\Standalone EXPTracker.pdb
+I:\DRealms\Plugin Dev\Standalone ExpTracker\bin\Release\Interfaces.dll
+I:\DRealms\Plugin Dev\Standalone ExpTracker\obj\Release\ResolveAssemblyReference.cache
+I:\DRealms\Plugin Dev\Standalone ExpTracker\obj\Release\Standalone_EXPTracker.Form1.resources
+I:\DRealms\Plugin Dev\Standalone ExpTracker\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
+I:\DRealms\Plugin Dev\Standalone ExpTracker\obj\Release\Standalone EXPTracker.dll
+I:\DRealms\Plugin Dev\Standalone ExpTracker\obj\Release\Standalone EXPTracker.pdb
