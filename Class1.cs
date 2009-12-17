@@ -8,6 +8,8 @@ namespace Standalone_EXPTracker
 {
     public class Class1 : IPlugin
     {
+        string _VERSION = "1.1.0";
+
         #region IPlugin Members
         public IHost _host;                             //Required for plugin
         public System.Windows.Forms.Form _parent;       //Required for plugin
@@ -18,6 +20,7 @@ namespace Standalone_EXPTracker
         private int _startTDP = 0;                      //Used for TDP tracking, this is set when first checking
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
+        private bool _sleeping = false;
         private string _mindState = "";                 //Used for converting mindstate parsed to an integer for GenieVariable
 
         // enabled appears unused at the moment
@@ -68,25 +71,31 @@ namespace Standalone_EXPTracker
             //Create hash table for all skills
             _skillList = new Hashtable(67);
 
-
             //Set Genie Variables if not already set
-            if (_host.get_Variable("ExpTracker.LearningRate") == "")
-                _host.set_Variable("ExpTracker.LearningRate", "1");
-
-            if (_host.get_Variable("ExpTracker.SortType") == "")
-                _host.set_Variable("ExpTracker.SortType", "0");
-
-            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "")
-                _host.set_Variable("ExpTracker.LearningRateNumber", "0");
 
             if (_host.get_Variable("ExpTracker.Window") == "")
                 _host.set_Variable("ExpTracker.Window", "0");
 
-            if (_host.get_Variable("ExpTracker.GagExp") == "")
-                _host.set_Variable("ExpTracker.GagExp", "0");
-
             if (_host.get_Variable("ExpTracker.ShowRankGain") == "")
                 _host.set_Variable("ExpTracker.ShowRankGain", "1");
+
+            if (_host.get_Variable("ExpTracker.LearningRate") == "")
+                _host.set_Variable("ExpTracker.LearningRate", "1");
+
+            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "")
+                _host.set_Variable("ExpTracker.LearningRateNumber", "0");
+
+            if (_host.get_Variable("ExpTracker.TrackSleep") == "")
+                _host.set_Variable("ExpTracker.TrackSleep", "0");
+
+            if (_host.get_Variable("ExpTracker.EchoSleep") == "")
+                _host.set_Variable("ExpTracker.EchoSleep", "0");
+            
+            if (_host.get_Variable("ExpTracker.SortType") == "")
+                _host.set_Variable("ExpTracker.SortType", "0");
+
+            if (_host.get_Variable("ExpTracker.GagExp") == "")
+                _host.set_Variable("ExpTracker.GagExp", "0");
 
             if (_host.get_Variable("ExpTracker.Color.Normal") == "")
                 _host.set_Variable("ExpTracker.Color.Normal", "WhiteSmoke");
@@ -96,7 +105,6 @@ namespace Standalone_EXPTracker
 
             if (_host.get_Variable("ExpTracker.Color.Learned") == "")
                 _host.set_Variable("ExpTracker.Color.Learned", "WhiteSmoke");
-
         }
 
         //Required for Plugin - Called when Genie needs the name of the plugin (On menu)
@@ -120,7 +128,7 @@ namespace Standalone_EXPTracker
             if (Text == "/?")
             {
                 _host.SendText("#echo");
-                _host.SendText(@"#echo Standalone EXPTracker Usage:");
+                _host.SendText(@"#echo Standalone EXPTracker (Ver:"+ _VERSION +") Usage:");
                 _host.SendText(@"#echo /trackreset");
                 _host.SendText(@"#echo """"    """" Used to reset tracking");
                 return "";
@@ -175,6 +183,16 @@ namespace Standalone_EXPTracker
                         if (Text.StartsWith("EXP HELP for more information"))
                         {
                             _parsing = false;
+                            if (_sleeping == true && _host.get_Variable("TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "0")
+                            {
+                                _host.set_Variable("ExpTracker.Sleeping", "1");
+                                _host.SendText("#var save");
+                            }
+                            else if (_sleeping == false && _host.get_Variable("TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1")
+                            {
+                                _host.set_Variable("ExpTracker.Sleeping", "0");
+                                _host.SendText("#var save");
+                            }
                             ShowExperience();
                         }
                         else if (Text.Contains("%"))
@@ -196,16 +214,32 @@ namespace Standalone_EXPTracker
                             if (_startTDP == 0)
                                 _startTDP = _TDP;
                         }
-
+                        else if (Text.StartsWith("You are relaxed and your mind has entered a state of rest.") )
+                            _sleeping = true;
                     }
                     else if (Text.StartsWith("Circle: "))
+                    {
                         _parsing = true;
+                        _sleeping = false;
+                    }
+
+                    if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "0" && (Text.StartsWith("You relax and allow your mind to enter a state of rest.") || Text.StartsWith("You are already resting your mind!")) )
+                    {
+                        _host.set_Variable("ExpTracker.Sleeping", "1");
+                        _host.SendText("#var save");
+                        _updateExp = true;
+                    }
+                    else if ( _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1" && (Text.StartsWith("You awaken from your reverie and begin to take in") || Text.StartsWith("But you are not sleeping!")) )
+                    {
+                        _host.set_Variable("ExpTracker.Sleeping", "0");
+                        _host.SendText("#var save");
+                        _updateExp = true;
+                    }
 
                     if (Text.StartsWith("Overall state of mind:"))
                         ParseMindState(Text.Substring(Text.IndexOf(":") + 1).Trim());
                     else if (_parsing && _host.get_Variable("ExpTracker.GagExp") == "1")
                         Text = "";
-
                 }
             }
             catch (Exception ex)
@@ -291,7 +325,7 @@ namespace Standalone_EXPTracker
 
         public string Version
         {
-            get { return "1.0"; }
+            get { return _VERSION; }
         }
 
         public void ParentClosing()
@@ -315,25 +349,9 @@ namespace Standalone_EXPTracker
         {
             Form1 form = new Form1(ref _host);
 
-            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "1")
-                form.cbLearningRateNumber.Checked = true;
-            else
-                form.cbLearningRateNumber.Checked = false;
-
-            if (_host.get_Variable("ExpTracker.LearningRate") == "1")
-                form.cbLearningRate.Checked = true;
-            else
-                form.cbLearningRate.Checked = false;
-
-            if (_host.get_Variable("ExpTracker.Window") == "1")
-                form.cbEnable.Checked = true;
-            else
-                form.cbEnable.Checked = false;
-
-            if (_host.get_Variable("ExpTracker.ShowRankGain") == "1")
-                form.cbRankGain.Checked = true;
-            else
-                form.cbRankGain.Checked = false;
+            form.txtNormal.Text = _host.get_Variable("ExpTracker.Color.Normal");
+            form.txtRankGained.Text = _host.get_Variable("ExpTracker.Color.RankGained");
+            form.txtLearned.Text = _host.get_Variable("ExpTracker.Color.Learned");
 
             if (_host.get_Variable("ExpTracker.GagExp") == "1")
                 form.cbGagExp.Checked = true;
@@ -346,10 +364,38 @@ namespace Standalone_EXPTracker
                 form.comboSort.Text = "Top to Bottom";
             else
                 form.comboSort.Text = "A to Z";
+            
+            form.txtEcho.Text = _host.get_Variable("ExpTracker.Echo");
 
-            form.txtNormal.Text = _host.get_Variable("ExpTracker.Color.Normal");
-            form.txtRankGained.Text = _host.get_Variable("ExpTracker.Color.RankGained");
-            form.txtLearned.Text = _host.get_Variable("ExpTracker.Color.Learned");
+            if (_host.get_Variable("ExpTracker.EchoSleep") == "1")
+                form.cbEchoSleep.Checked = true;
+            else
+                form.cbEchoSleep.Checked = false;
+
+            if (_host.get_Variable("ExpTracker.TrackSleep") == "1")
+                form.cbTrackSleep.Checked = true;
+            else
+                form.cbTrackSleep.Checked = false;
+
+            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "1")
+                form.cbLearningRateNumber.Checked = true;
+            else
+                form.cbLearningRateNumber.Checked = false;
+
+            if (_host.get_Variable("ExpTracker.LearningRate") == "1")
+                form.cbLearningRate.Checked = true;
+            else
+                form.cbLearningRate.Checked = false;
+
+            if (_host.get_Variable("ExpTracker.ShowRankGain") == "1")
+                form.cbRankGain.Checked = true;
+            else
+                form.cbRankGain.Checked = false;
+
+            if (_host.get_Variable("ExpTracker.Window") == "1")
+                form.cbEnable.Checked = true;
+            else
+                form.cbEnable.Checked = false;
 
             if (parent != null)
                 form.MdiParent = parent;
@@ -983,13 +1029,17 @@ namespace Standalone_EXPTracker
                         }
 
                         string tdp = String.Empty;
-
+                        string asleep = String.Empty;
                         if (_startTDP < _TDP)
                             tdp = ";#echo >Experience TDP gained: " + (_TDP - _startTDP);
-
+                        if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.EchoSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1")
+                            if (_host.get_Variable("ExpTracker.Echo") == "")
+                                asleep = ";#echo >Experience YOU ARE ASLEEP!";
+                            else
+                                asleep = ";#echo >Experience " + _host.get_Variable("ExpTracker.Echo");
 
                         TimeSpan oTimeSpan = DateTime.Now - _startTime;
-                        _host.SendText("#echo >Experience Overall state of mind: " + _mindState + tdp + ";#echo >Experience Last updated: $time;#echo >Experience Tracking for: " + FormatTimeSpan(oTimeSpan) + ";#echo >Experience @resume@");
+                        _host.SendText("#echo >Experience Overall state of mind: " + _mindState + asleep + tdp + ";#echo >Experience Last updated: $time;#echo >Experience Tracking for: " + FormatTimeSpan(oTimeSpan) + ";#echo >Experience @resume@");
                     }
                 }
             }

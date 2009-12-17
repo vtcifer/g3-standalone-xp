@@ -21,16 +21,6 @@ namespace Standalone_EXPTracker
         }
         private void btnOk_Click(object sender, EventArgs e)
         {
-            if (cbLearningRate.Checked == true)
-                _host.set_Variable("ExpTracker.LearningRate", "1");
-            else
-                _host.set_Variable("ExpTracker.LearningRate", "0");
-
-            if (cbLearningRateNumber.Checked == true)
-                _host.set_Variable("ExpTracker.LearningRateNumber", "1");
-            else
-                _host.set_Variable("ExpTracker.LearningRateNumber", "0");
-
             if (cbEnable.Checked == true)
                 _host.set_Variable("ExpTracker.Window", "1");
             else
@@ -41,17 +31,38 @@ namespace Standalone_EXPTracker
             else
                 _host.set_Variable("ExpTracker.ShowRankGain", "0");
 
-            if (cbGagExp.Checked == true)
-                _host.set_Variable("ExpTracker.GagExp", "1");
+            if (cbLearningRate.Checked == true)
+                _host.set_Variable("ExpTracker.LearningRate", "1");
             else
-                _host.set_Variable("ExpTracker.GagExp", "0");
+                _host.set_Variable("ExpTracker.LearningRate", "0");
 
+            if (cbLearningRateNumber.Checked == true)
+                _host.set_Variable("ExpTracker.LearningRateNumber", "1");
+            else
+                _host.set_Variable("ExpTracker.LearningRateNumber", "0");
+
+            if (cbTrackSleep.Checked == true)
+                _host.set_Variable("ExpTracker.TrackSleep", "1");
+            else
+                _host.set_Variable("ExpTracker.TrackSleep", "0");
+
+            if (cbEchoSleep.Checked == true)
+                _host.set_Variable("ExpTracker.EchoSleep", "1");
+            else
+                _host.set_Variable("ExpTracker.EchoSleep", "0");
+            _host.set_Variable("ExpTracker.Echo", txtEcho.Text);
+            
             if (comboSort.Text == "A to Z")
                 _host.set_Variable("ExpTracker.SortType", "0");
             else if (comboSort.Text == "Left to Right")
                 _host.set_Variable("ExpTracker.SortType", "1");
             else
                 _host.set_Variable("ExpTracker.SortType", "2");
+
+            if (cbGagExp.Checked == true)
+                _host.set_Variable("ExpTracker.GagExp", "1");
+            else
+                _host.set_Variable("ExpTracker.GagExp", "0");
 
             _host.set_Variable("ExpTracker.Color.RankGained", txtRankGained.Text);
             _host.set_Variable("ExpTracker.Color.Learned", txtLearned.Text);
@@ -140,11 +151,90 @@ namespace Standalone_EXPTracker
                 lblLearned.ForeColor = color;
             else if (txtLearned.Text.StartsWith("#") && txtLearned.Text.Length == 7)
                 lblLearned.ForeColor = System.Drawing.ColorTranslator.FromHtml(txtLearned.Text);
+            cbEnable_CheckedChanged(sender,e);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
         }
+
+        private void cbEnable_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbEnable.Checked == true)
+            {
+                cbRankGain.Enabled = true;
+                cbLearningRate.Enabled = true;
+                cbLearningRateNumber.Enabled = true;
+                
+                cbTrackSleep.Enabled = true;
+                if (cbTrackSleep.Checked == true)
+                {
+                    cbEchoSleep.Enabled = true;
+                    if (cbEchoSleep.Checked == true)
+                        txtEcho.Enabled = true;
+                    else
+                        txtEcho.Enabled = false;
+                }
+                else
+                {
+                    cbEchoSleep.Enabled = false;
+                    txtEcho.Enabled = false;
+                }
+                comboSort.Enabled = true;
+                cbGagExp.Enabled = true;
+                txtNormal.Enabled = true;
+                btnNormal.Enabled = true;
+                txtRankGained.Enabled = true;
+                btnRankGained.Enabled = true;
+                txtLearned.Enabled = true;
+                btnLearned.Enabled = true;
+            }
+            else
+            {
+                cbRankGain.Enabled = false;
+                cbLearningRate.Enabled = false;
+                cbLearningRateNumber.Enabled = false;
+
+                cbTrackSleep.Enabled = false;
+                cbEchoSleep.Enabled = false;
+                txtEcho.Enabled = false;
+                
+                comboSort.Enabled = false;
+                cbGagExp.Enabled = false;
+                txtNormal.Enabled = false;
+                btnNormal.Enabled = false;
+                txtRankGained.Enabled = false;
+                btnRankGained.Enabled = false;
+                txtLearned.Enabled = false;
+                btnLearned.Enabled = false;
+            }
+        }
+
+        private void cbTrackSleep_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbTrackSleep.Checked == true)
+            {
+                cbEchoSleep.Enabled = true;
+                if (cbEchoSleep.Checked == true)
+                    txtEcho.Enabled = true;
+                else
+                    txtEcho.Enabled = false;
+            }
+            else
+            {
+                cbEchoSleep.Enabled = false;
+                txtEcho.Enabled = false;
+            }
+        }
+
+        private void cbEchoSleep_CheckedChanged(object sender, EventArgs e)
+        {
+            if(cbEchoSleep.Checked == true)
+                txtEcho.Enabled = true;
+            else
+                txtEcho.Enabled = false;
+        }
+
     }
 }

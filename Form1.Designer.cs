@@ -49,6 +49,10 @@
             this.cbLearningRate = new System.Windows.Forms.CheckBox();
             this.comboSort = new System.Windows.Forms.ComboBox();
             this.lblSort = new System.Windows.Forms.Label();
+            this.cbTrackSleep = new System.Windows.Forms.CheckBox();
+            this.cbEchoSleep = new System.Windows.Forms.CheckBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtEcho = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // cbEnable
@@ -60,11 +64,12 @@
             this.cbEnable.TabIndex = 0;
             this.cbEnable.Text = "Enable Experience Window";
             this.cbEnable.UseVisualStyleBackColor = true;
+            this.cbEnable.CheckedChanged += new System.EventHandler(this.cbEnable_CheckedChanged);
             // 
             // cbRankGain
             // 
             this.cbRankGain.AutoSize = true;
-            this.cbRankGain.Location = new System.Drawing.Point(33, 32);
+            this.cbRankGain.Location = new System.Drawing.Point(32, 31);
             this.cbRankGain.Name = "cbRankGain";
             this.cbRankGain.Size = new System.Drawing.Size(108, 17);
             this.cbRankGain.TabIndex = 2;
@@ -74,7 +79,7 @@
             // cbGagExp
             // 
             this.cbGagExp.AutoSize = true;
-            this.cbGagExp.Location = new System.Drawing.Point(12, 127);
+            this.cbGagExp.Location = new System.Drawing.Point(12, 203);
             this.cbGagExp.Name = "cbGagExp";
             this.cbGagExp.Size = new System.Drawing.Size(180, 17);
             this.cbGagExp.TabIndex = 3;
@@ -83,7 +88,7 @@
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(17, 300);
+            this.btnOk.Location = new System.Drawing.Point(17, 376);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
             this.btnOk.TabIndex = 5;
@@ -93,7 +98,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(192, 300);
+            this.btnCancel.Location = new System.Drawing.Point(192, 376);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 6;
@@ -103,21 +108,21 @@
             // 
             // txtRankGained
             // 
-            this.txtRankGained.Location = new System.Drawing.Point(13, 211);
+            this.txtRankGained.Location = new System.Drawing.Point(13, 287);
             this.txtRankGained.Name = "txtRankGained";
             this.txtRankGained.Size = new System.Drawing.Size(100, 20);
             this.txtRankGained.TabIndex = 7;
             // 
             // txtLearned
             // 
-            this.txtLearned.Location = new System.Drawing.Point(12, 264);
+            this.txtLearned.Location = new System.Drawing.Point(12, 340);
             this.txtLearned.Name = "txtLearned";
             this.txtLearned.Size = new System.Drawing.Size(100, 20);
             this.txtLearned.TabIndex = 8;
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(13, 192);
+            this.label1.Location = new System.Drawing.Point(13, 268);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(255, 16);
             this.label1.TabIndex = 9;
@@ -126,7 +131,7 @@
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(13, 245);
+            this.label2.Location = new System.Drawing.Point(13, 321);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(255, 19);
             this.label2.TabIndex = 10;
@@ -135,7 +140,7 @@
             // 
             // btnRankGained
             // 
-            this.btnRankGained.Location = new System.Drawing.Point(207, 211);
+            this.btnRankGained.Location = new System.Drawing.Point(207, 287);
             this.btnRankGained.Name = "btnRankGained";
             this.btnRankGained.Size = new System.Drawing.Size(61, 22);
             this.btnRankGained.TabIndex = 11;
@@ -148,7 +153,7 @@
             this.lblRankGained.BackColor = System.Drawing.Color.Black;
             this.lblRankGained.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblRankGained.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblRankGained.Location = new System.Drawing.Point(118, 211);
+            this.lblRankGained.Location = new System.Drawing.Point(118, 287);
             this.lblRankGained.Name = "lblRankGained";
             this.lblRankGained.Size = new System.Drawing.Size(83, 20);
             this.lblRankGained.TabIndex = 12;
@@ -160,7 +165,7 @@
             this.lblLearned.BackColor = System.Drawing.Color.Black;
             this.lblLearned.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblLearned.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblLearned.Location = new System.Drawing.Point(118, 264);
+            this.lblLearned.Location = new System.Drawing.Point(118, 340);
             this.lblLearned.Name = "lblLearned";
             this.lblLearned.Size = new System.Drawing.Size(83, 20);
             this.lblLearned.TabIndex = 13;
@@ -169,7 +174,7 @@
             // 
             // btnLearned
             // 
-            this.btnLearned.Location = new System.Drawing.Point(207, 264);
+            this.btnLearned.Location = new System.Drawing.Point(207, 340);
             this.btnLearned.Name = "btnLearned";
             this.btnLearned.Size = new System.Drawing.Size(61, 22);
             this.btnLearned.TabIndex = 14;
@@ -182,7 +187,7 @@
             this.lblNormal.BackColor = System.Drawing.Color.Black;
             this.lblNormal.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNormal.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblNormal.Location = new System.Drawing.Point(118, 164);
+            this.lblNormal.Location = new System.Drawing.Point(118, 240);
             this.lblNormal.Name = "lblNormal";
             this.lblNormal.Size = new System.Drawing.Size(83, 20);
             this.lblNormal.TabIndex = 18;
@@ -191,7 +196,7 @@
             // 
             // btnNormal
             // 
-            this.btnNormal.Location = new System.Drawing.Point(207, 164);
+            this.btnNormal.Location = new System.Drawing.Point(207, 240);
             this.btnNormal.Name = "btnNormal";
             this.btnNormal.Size = new System.Drawing.Size(61, 22);
             this.btnNormal.TabIndex = 17;
@@ -201,7 +206,7 @@
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(10, 148);
+            this.label4.Location = new System.Drawing.Point(10, 224);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(258, 13);
             this.label4.TabIndex = 16;
@@ -210,7 +215,7 @@
             // 
             // txtNormal
             // 
-            this.txtNormal.Location = new System.Drawing.Point(13, 164);
+            this.txtNormal.Location = new System.Drawing.Point(13, 240);
             this.txtNormal.Name = "txtNormal";
             this.txtNormal.Size = new System.Drawing.Size(100, 20);
             this.txtNormal.TabIndex = 15;
@@ -228,7 +233,7 @@
             // cbLearningRate
             // 
             this.cbLearningRate.AutoSize = true;
-            this.cbLearningRate.Location = new System.Drawing.Point(33, 54);
+            this.cbLearningRate.Location = new System.Drawing.Point(32, 54);
             this.cbLearningRate.Name = "cbLearningRate";
             this.cbLearningRate.Size = new System.Drawing.Size(156, 17);
             this.cbLearningRate.TabIndex = 20;
@@ -247,7 +252,7 @@
             "A to Z",
             "Left to Right",
             "Top to Bottom"});
-            this.comboSort.Location = new System.Drawing.Point(95, 97);
+            this.comboSort.Location = new System.Drawing.Point(95, 173);
             this.comboSort.MaxDropDownItems = 3;
             this.comboSort.Name = "comboSort";
             this.comboSort.Size = new System.Drawing.Size(151, 21);
@@ -257,17 +262,59 @@
             // lblSort
             // 
             this.lblSort.AutoSize = true;
-            this.lblSort.Location = new System.Drawing.Point(36, 100);
+            this.lblSort.Location = new System.Drawing.Point(36, 176);
             this.lblSort.Name = "lblSort";
             this.lblSort.Size = new System.Drawing.Size(56, 13);
             this.lblSort.TabIndex = 22;
             this.lblSort.Text = "Sort Type:";
             // 
+            // cbTrackSleep
+            // 
+            this.cbTrackSleep.AutoSize = true;
+            this.cbTrackSleep.Location = new System.Drawing.Point(32, 100);
+            this.cbTrackSleep.Name = "cbTrackSleep";
+            this.cbTrackSleep.Size = new System.Drawing.Size(98, 17);
+            this.cbTrackSleep.TabIndex = 23;
+            this.cbTrackSleep.Text = "Track Sleeping";
+            this.cbTrackSleep.UseVisualStyleBackColor = true;
+            this.cbTrackSleep.CheckedChanged += new System.EventHandler(this.cbTrackSleep_CheckedChanged);
+            // 
+            // cbEchoSleep
+            // 
+            this.cbEchoSleep.AutoSize = true;
+            this.cbEchoSleep.Location = new System.Drawing.Point(40, 123);
+            this.cbEchoSleep.Name = "cbEchoSleep";
+            this.cbEchoSleep.Size = new System.Drawing.Size(161, 17);
+            this.cbEchoSleep.TabIndex = 24;
+            this.cbEchoSleep.Text = "Echo to Experience Window";
+            this.cbEchoSleep.UseVisualStyleBackColor = true;
+            this.cbEchoSleep.CheckedChanged += new System.EventHandler(this.cbEchoSleep_CheckedChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(36, 143);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(71, 13);
+            this.label3.TabIndex = 25;
+            this.label3.Text = "Text to Echo:";
+            // 
+            // txtEcho
+            // 
+            this.txtEcho.Location = new System.Drawing.Point(113, 140);
+            this.txtEcho.Name = "txtEcho";
+            this.txtEcho.Size = new System.Drawing.Size(153, 20);
+            this.txtEcho.TabIndex = 26;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(278, 335);
+            this.ClientSize = new System.Drawing.Size(278, 405);
+            this.Controls.Add(this.txtEcho);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.cbEchoSleep);
+            this.Controls.Add(this.cbTrackSleep);
             this.Controls.Add(this.lblSort);
             this.Controls.Add(this.comboSort);
             this.Controls.Add(this.cbLearningRate);
@@ -320,5 +367,9 @@
         public System.Windows.Forms.CheckBox cbLearningRate;
         private System.Windows.Forms.Label lblSort;
         public System.Windows.Forms.ComboBox comboSort;
+        private System.Windows.Forms.Label label3;
+        public System.Windows.Forms.TextBox txtEcho;
+        public System.Windows.Forms.CheckBox cbTrackSleep;
+        public System.Windows.Forms.CheckBox cbEchoSleep;
     }
 }
