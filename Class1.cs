@@ -8,7 +8,7 @@ namespace Standalone_EXPTracker
 {
     public class Class1 : IPlugin
     {
-        string _VERSION = "1.1.0";
+        string _VERSION = "1.2.1";
 
         #region IPlugin Members
         public IHost _host;                             //Required for plugin
@@ -39,6 +39,7 @@ namespace Standalone_EXPTracker
             public bool learned = false;            //Used for displaying text in a specific color when bits are added to pool
             public int sortLR = 0;                  //Used for sorting As reading, Left to Right
             public int sortTB = 0;                  //Used for sorting As, Top to Bottom (Based on ALL skills visible)
+            public string shortname = "";           //Used for short name display instead of long name
         }
 
         //Class Sortskill
@@ -46,9 +47,10 @@ namespace Standalone_EXPTracker
         //Used in an array list for sorting, which is fed from a hashtable
         public class Sortskill
         {
-            public string name = "";    //Name of skill
-            public int sortLR = 0;      //Ordered value based on Reading sort (Left to Right)
-            public int sortTB = 0;      //Ordered value based on top to bottom, THEN left to right 
+            public string name = "";        //Name of skill
+            public string shortname = "";   //Shortened name of skill
+            public int sortLR = 0;          //Ordered value based on Reading sort (Left to Right)
+            public int sortTB = 0;          //Ordered value based on top to bottom, THEN left to right 
         }
         #endregion
         #region IPlugin Methods
@@ -125,19 +127,12 @@ namespace Standalone_EXPTracker
             //User asking for help with commands 
             //Note as more plugins do this this could get VERY long.
             //Also not sure how this would work with multiple plugins doing this as well
-            if (Text == "/?")
-            {
-                _host.SendText("#echo");
-                _host.SendText(@"#echo Standalone EXPTracker (Ver:"+ _VERSION +") Usage:");
-                _host.SendText(@"#echo /trackreset");
-                _host.SendText(@"#echo """"    """" Used to reset tracking");
-                return "";
-            }
+
             //Reset all tracking
             //IE:
             //      TDPs
             //      Ranks gained
-            if (Text == "/trackreset")
+            if (Text == "/trackreset" || Text == "/track reset")
             {
                 //Reset TDP tracking
                 _TDP = 0;
@@ -146,7 +141,7 @@ namespace Standalone_EXPTracker
                 //Reset "Tracking Since"
                 _startTime = DateTime.Now;
 
-                //Reset Skill Tracking info
+                //Reset skill tracking to current values
                 IDictionaryEnumerator en = _skillList.GetEnumerator();
                 Hashtable ht = new Hashtable(67);
                 while (en.MoveNext())
@@ -163,6 +158,60 @@ namespace Standalone_EXPTracker
                 _host.SendText("#echo Rank tracking reset.");
                 return "";
             }
+            if (Text.StartsWith("/track"))
+            {
+                if (Text == "/track clear")
+                {
+                //Reset TDP tracking
+                    _TDP = 0;
+                    _startTDP = 0;
+
+                    //Reset "Tracking Since"
+                    _startTime = DateTime.Now;
+                        
+                    //Reset all skill tracking info to start values
+                    _skillList.Clear();
+                    _skillList = new Hashtable(67);
+
+                    //Alert User of Reset:
+                    _host.SendText("#echo");
+                    _host.SendText("#echo XP Tracker reset to intial values");
+                    return "";
+                }
+                else if (Text == "/trackpause")
+                {
+                    //Pauses XP Tracker until /trackresume is seen
+                    _enabled = false;
+                    _host.SendText("#echo");
+                    _host.SendText("#echo XP Tracker paused.");
+                    _host.SendText("#/track resume to un-pause");
+                    
+                    return "";
+                }
+                else if (Text == "/trackresume")
+                {
+                    //Resumes XP Tracker
+                    _enabled = true;
+                    _host.SendText("#echo");
+                    _host.SendText("#echo XP Tracker resumed.");
+                
+                    return "";
+                }
+                else
+                {
+                    _host.SendText("#echo");
+                    _host.SendText(@"#echo Standlone EXPTracker (Ver:"+ _VERSION +") Usage:");
+                    _host.SendText(@"#echo /track reset");
+                    _host.SendText(@"#echo """"    """" Used to reset tracking");
+                    _host.SendText(@"#echo /track clear");
+                    _host.SendText(@"#echo """"    """" Used to reset as if you just started Genie");
+                    _host.SendText(@"#echo /track pause");
+                    _host.SendText(@"#echo """"    """" Used to pause Exp Tracker from tracking ANY Exp Changes");
+                    _host.SendText(@"#echo /track clear");
+                    _host.SendText(@"#echo """"    """" Used to resume Exp Tracker");
+                    return "";
+                }
+            }
             //means no special arguments, send command on to game
             return Text;
         }
@@ -174,6 +223,8 @@ namespace Standalone_EXPTracker
         //              string: Text that will be sent to the main window
         public string ParseText(string Text)
         {
+            if (_enabled == false)
+                 return Text;
             try
             {
                 if (_host != null)
@@ -253,6 +304,9 @@ namespace Standalone_EXPTracker
         //              string Text:  That "xml" text comes from the game
         public void ParseXML(string XML)
         {
+            if (_enabled == false)
+                 return;
+
             if (XML.Contains("prompt"))
             {
 
@@ -530,7 +584,7 @@ namespace Standalone_EXPTracker
                 case "mind lock":
                     return 34;
                 default:
-                    return 0;
+                    return -1;
             }
 
         }
@@ -584,153 +638,190 @@ namespace Standalone_EXPTracker
 
             int SortLR = 0;
             int SortTB = 0;
+            string ShortName = "";
             switch (name)
             {
                 case "Bone Armor":
                     SortLR = 7;
                     SortTB = 37;
+                    ShortName = "Bone";
                     break;
                 case "Cloth Armor":
                     SortLR = 6;
                     SortTB = 3;
+                    ShortName = "Cloth";
                     break;
                 case "Heavy Chain":
                     SortLR = 3;
                     SortTB = 35;
+                    ShortName = "HC";
                     break;
                 case "Heavy Plate":
                     SortLR = 5;
                     SortTB = 36;
+                    ShortName = "HP";
                     break;
                 case "Leather Armor":
                     SortLR = 1;
                     SortTB = 34;
+                    ShortName = "Leather";
                     break;
                 case "Light Chain":
                     SortLR = 2;
                     SortTB = 1;
+                    ShortName = "LC";
                     break;
                 case "Light Plate":
                     SortLR = 4;
                     SortTB = 2;
+                    ShortName = "LP";
                     break;
                 case "Shield Usage":
                     SortLR = 0;
                     SortTB = 0;
+                    ShortName = "Shield";
                     break;
                 case "Brawling":
                     SortLR = 31;
                     SortTB = 49;
+                    ShortName = "Brawl";
                     break;
                 case "Composite Bow":
                     SortLR = 22;
                     SortTB = 11;
+                    ShortName = "C Bow";
                     break;
                 case "Halberds":
                     SortLR = 28;
                     SortTB = 14;
+                    ShortName = "Halberd";
                     break;
                 case "Heavy Blunt":
                     SortLR = 16;
                     SortTB = 8;
+                    ShortName = "HB";
                     break;
                 case "Heavy Crossbow":
                     SortLR = 24;
                     SortTB = 12;
+                    ShortName = "HX";
                     break;
                 case "Heavy Edged":
                     SortLR = 12;
                     SortTB = 6;
+                    ShortName = "HE";
                     break;
                 case "Heavy Thrown":
                     SortLR = 30;
                     SortTB = 15;
+                    ShortName = "HT";
                     break;
                 case "Light Blunt":
                     SortLR = 14;
                     SortTB = 07;
+                    ShortName = "LB";
                     break;
                 case "Light Crossbow":
                     SortLR = 23;
                     SortTB = 45;
+                    ShortName = "LX";
                     break;
                 case "Light Edged":
                     SortLR = 10;
                     SortTB = 05;
+                    ShortName = "LE";
                     break;
                 case "Light Thrown":
                     SortLR = 29;
                     SortTB = 48;
+                    ShortName = "LT";
                     break;
                 case "Long Bow":
                     SortLR = 21;
                     SortTB = 44;
+                    ShortName = "L Bow";
                     break;
                 case "Medium Blunt":
                     SortLR = 15;
                     SortTB = 41;
+                    ShortName = "MB";
                     break;
                 case "Medium Edged":
                     SortLR = 11;
                     SortTB = 39;
+                    ShortName = "ME";
                     break;
                 case "Multi Opponent":
                     SortLR = 9;
                     SortTB = 38;
+                    ShortName = "MO";
                     break;
                 case "Offhand Weapon":
                     SortLR = 32;
                     SortTB = 16;
+                    ShortName = "Offhand";
                     break;
                 case "Parry Ability":
                     SortLR = 8;
                     SortTB = 4;
+                    ShortName = "Parry";
                     break;
                 case "Pikes":
                     SortLR = 27;
                     SortTB = 47;
+                    ShortName = "Pike";
                     break;
                 case "Quarter Staff":
                     SortLR = 26;
                     SortTB = 13;
+                    ShortName = "Q Staff";
                     break;
                 case "Short Bow":
                     SortLR = 20;
                     SortTB = 10;
+                    ShortName = "S Bow";
                     break;
                 case "Short Staff":
                     SortLR = 25;
                     SortTB = 46;
+                    ShortName = "S Staff";
                     break;
                 case "Slings":
                     SortLR = 18;
                     SortTB = 9;
+                    ShortName = "Sling";
                     break;
                 case "Staff Sling":
                     SortLR = 19;
                     SortTB = 43;
+                    ShortName = "S Sling";
                     break;
                 case "Twohanded Blunt":
                     SortLR = 17;
                     SortTB = 42;
+                    ShortName = "2HB";
                     break;
                 case "Twohanded Edged":
                     SortLR = 13;
                     SortTB = 40;
+                    ShortName = "2HE";
                     break;
                 case "Harness Ability":
                     SortLR = 34;
                     SortTB = 17;
+                    ShortName = "Harness";
                     if (_host.get_Variable("ExpTracker.Debug") == "1")
                         _host.SendText("#echo >Debug Name: " + name + " XX LR:" + SortLR + " XX TB:" + SortTB);
                     break;
                 case "Arcana":
                     SortLR = 36;
                     SortTB = 18;
+                    ShortName = "Arcana";
                     break;
                 case "Power Perceive":
                     SortLR = 35;
                     SortTB = 51;
+                    ShortName = "PP";
                     if (_host.get_Variable("ExpTracker.Debug") == "1")
                         _host.SendText("#echo >Debug Name: " + name + " XX LR:" + SortLR + " XX TB:" + SortTB);
                     break;
@@ -740,130 +831,162 @@ namespace Standalone_EXPTracker
                 case "Elemental Magic":
                 case "Inner Magic":
                 case "Arcane Magic":
+                    //name = "Primary Magic";
                     SortLR = 33;
                     SortTB = 50;
+                    ShortName = "Magic";
                     if (_host.get_Variable("ExpTracker.Debug") == "1")
                         _host.SendText("#echo >Debug Name: " + name + " XX LR:" + SortLR + " XX TB:" + SortTB);
                     break;
                 case "Targeted Magic":
                     SortLR = 37;
                     SortTB = 52;
+                    ShortName = "TM";
                     break;
                 case "Animal Lore":
                     SortLR = 59;
                     SortTB = 63;
+                    ShortName = "Animal";
                     break;
                 case "Appraisal":
                     SortLR = 56;
                     SortTB = 28;
+                    ShortName = "App";
                     break;
                 case "Astrology":
                     SortLR = 64;
                     SortTB = 32;
+                    ShortName = "Astro";
                     break;
                 case "Mechanical Lore":
                     SortLR = 54;
                     SortTB = 27;
+                    ShortName = "Mech";
                     break;
                 case "Percussions":
                     SortLR = 60;
                     SortTB = 30;
+                    ShortName = "Percuss";
                     break;
                 case "Scholarship":
                     SortLR = 53;
                     SortTB = 60;
+                    ShortName = "Scholar";
                     break;
                 case "Strings":
                     SortLR = 61;
                     SortTB = 64;
+                    ShortName = "Strings";
                     break;
                 case "Teaching":
                     SortLR = 57;
                     SortTB = 62;
+                    ShortName = "Teach";
                     break;
                 case "Winds":
                     SortLR = 62;
                     SortTB = 31;
+                    ShortName = "Winds";
                     break;
                 case "Vocals":
                     SortLR = 63;
                     SortTB = 65;
+                    ShortName = "Vocals";
                     break;
                 case "Trading":
                     SortLR = 58;
                     SortTB = 29;
+                    ShortName = "Trade";
                     break;
                 case "Empathy":
                     SortLR = 65;
                     SortTB = 66;
+                    ShortName = "Empathy";
                     break;
                 case "Thanatology":
                     SortLR = 66;
                     SortTB = 33;
+                    ShortName = "Than";
                     break;
                 case "Climbing":
                     SortLR = 39;
                     SortTB = 53;
+                    ShortName = "Climb";
                     break;
                 case "Disarm Traps":
                     SortLR = 44;
                     SortTB = 22;
+                    ShortName = "Disarm";
                     break;
                 case "Escaping":
                     SortLR = 49;
                     SortTB = 58;
+                    ShortName = "Escape";
                     break;
                 case "Evasion":
                     SortLR = 38;
                     SortTB = 19;
+                    ShortName = "Evade";
                     break;
                 case "First Aid":
                     SortLR = 47;
                     SortTB = 57;
+                    ShortName = "FA";
                     break;
                 case "Foraging":
                     SortLR = 48;
                     SortTB = 24;
+                    ShortName = "Forage";
                     break;
                 case "Hiding":
                     SortLR = 42;
                     SortTB = 21;
+                    ShortName = "Hide";
                     break;
                 case "Lockpicking":
                     SortLR = 43;
                     SortTB = 55;
+                    ShortName = "Locks";
                     break;
                 case "Perception":
                     SortLR = 40;
                     SortTB = 20;
+                    ShortName = "Percep";
                     break;
                 case "Skinning":
                     SortLR = 51;
                     SortTB = 59;
+                    ShortName = "Skin";
                     break;
                 case "Stalking":
                     SortLR = 45;
                     SortTB = 56;
+                    ShortName = "Stalk";
                     break;
                 case "Stealing":
                     SortLR = 46;
                     SortTB = 23;
+                    ShortName = "Steal";
                     break;
                 case "Swimming":
                     SortLR = 52;
                     SortTB = 26;
+                    ShortName = "Swim";
                     break;
                 case "Backstab":
                     SortLR = 50;
                     SortTB = 25;
+                    ShortName = "BS";
                     break;
                 case "Scouting":
                     SortLR = 41;
                     SortTB = 54;
+                    ShortName = "Scout";
                     break;
                 default:
                     SortLR = 100;
                     SortTB = 100;
+                    ShortName = "Err!";
                     break;
             }
 
@@ -885,6 +1008,7 @@ namespace Standalone_EXPTracker
                     skill.rankGained = true;
                 skill.sortLR = SortLR;
                 skill.sortTB = SortTB;
+                skill.shortname = ShortName;
                 _skillList[name] = skill;
             }
             else
@@ -896,7 +1020,8 @@ namespace Standalone_EXPTracker
                     rank = dRank,
                     startRank = dRank,
                     sortLR = SortLR,
-                    sortTB = SortTB
+                    sortTB = SortTB,
+                    shortname = ShortName
                 };
                 if (type == 1)
                     skill.learned = true;
@@ -994,8 +1119,11 @@ namespace Standalone_EXPTracker
                         {
                             Skill skill = (Skill)_skillList[item.name];
 
-
-                            string output = String.Format("{0,15:G}:{1,9} ", item.name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                            string output = "";
+                            if( _host.get_Variable("ExpTracker.NameLength") == "1")
+                                output = String.Format("{0,15:G}:{1,9} ", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                            else
+                                output = String.Format("{0,15:G}:{1,9} ", item.name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
 
                             if (_host.get_Variable("ExpTracker.LearningRate") == "1")
                                 output += String.Format("{0,-13}", skill.learningRate);
