@@ -14,3 +14,11 @@ C:\Documents and Settings\Derek\Desktop\Plugin Dev\g3-standalone-xp\obj\Release\
 C:\Documents and Settings\Derek\Desktop\Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
 C:\Documents and Settings\Derek\Desktop\Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.dll
 C:\Documents and Settings\Derek\Desktop\Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.pdb
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\bin\Release\Standalone EXPTracker.dll
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\bin\Release\Standalone EXPTracker.pdb
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\bin\Release\Interfaces.dll
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone_EXPTracker.Form1.resources
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.dll
+C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.pdb
