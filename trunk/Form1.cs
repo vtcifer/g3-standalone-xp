@@ -64,6 +64,11 @@ namespace Standalone_EXPTracker
             else
                 _host.set_Variable("ExpTracker.GagExp", "0");
 
+            if (cbShort.Checked == true)
+                _host.set_Variable("ExpTracker.ShortNames", "1");
+            else
+                _host.set_Variable("ExpTracker.ShortNames", "0");
+
             _host.set_Variable("ExpTracker.Color.RankGained", txtRankGained.Text);
             _host.set_Variable("ExpTracker.Color.Learned", txtLearned.Text);
             _host.set_Variable("ExpTracker.Color.Normal", txtNormal.Text);
@@ -183,12 +188,14 @@ namespace Standalone_EXPTracker
                 }
                 comboSort.Enabled = true;
                 cbGagExp.Enabled = true;
+                cbShort.Enabled = true; 
                 txtNormal.Enabled = true;
                 btnNormal.Enabled = true;
                 txtRankGained.Enabled = true;
                 btnRankGained.Enabled = true;
                 txtLearned.Enabled = true;
                 btnLearned.Enabled = true;
+
             }
             else
             {
@@ -202,6 +209,7 @@ namespace Standalone_EXPTracker
                 
                 comboSort.Enabled = false;
                 cbGagExp.Enabled = false;
+                cbShort.Enabled = false;
                 txtNormal.Enabled = false;
                 btnNormal.Enabled = false;
                 txtRankGained.Enabled = false;

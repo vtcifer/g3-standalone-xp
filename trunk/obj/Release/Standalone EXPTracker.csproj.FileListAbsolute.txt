@@ -22,3 +22,19 @@ C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone_EXP
 C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
 C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.dll
 C:\Users\Derek\Desktop\G3 Plugin Dev\g3-standalone-xp\obj\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\obj\Release\Standalone_EXPTracker.Form1.resources
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\obj\Release\Standalone EXPTracker.dll
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\bin\Release\Standalone EXPTracker.dll
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\bin\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\bin\Release\Interfaces.dll
+C:\Documents and Settings\Derek\My Documents\g3-standalone-xp\obj\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\bin\Release\Standalone EXPTracker.dll
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\bin\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\bin\Release\Interfaces.dll
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone_EXPTracker.Form1.resources
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone EXPTracker.dll
+C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone EXPTracker.pdb
