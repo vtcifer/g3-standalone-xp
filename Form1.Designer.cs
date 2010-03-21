@@ -53,15 +53,16 @@
             this.cbEchoSleep = new System.Windows.Forms.CheckBox();
             this.label3 = new System.Windows.Forms.Label();
             this.txtEcho = new System.Windows.Forms.TextBox();
+            this.cbShort = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // cbEnable
             // 
             this.cbEnable.AutoSize = true;
-            this.cbEnable.Location = new System.Drawing.Point(12, 12);
+            this.cbEnable.Location = new System.Drawing.Point(201, 8);
             this.cbEnable.Name = "cbEnable";
             this.cbEnable.Size = new System.Drawing.Size(157, 17);
-            this.cbEnable.TabIndex = 0;
+            this.cbEnable.TabIndex = 1;
             this.cbEnable.Text = "Enable Experience Window";
             this.cbEnable.UseVisualStyleBackColor = true;
             this.cbEnable.CheckedChanged += new System.EventHandler(this.cbEnable_CheckedChanged);
@@ -79,50 +80,50 @@
             // cbGagExp
             // 
             this.cbGagExp.AutoSize = true;
-            this.cbGagExp.Location = new System.Drawing.Point(12, 203);
+            this.cbGagExp.Location = new System.Drawing.Point(32, 165);
             this.cbGagExp.Name = "cbGagExp";
             this.cbGagExp.Size = new System.Drawing.Size(180, 17);
-            this.cbGagExp.TabIndex = 3;
+            this.cbGagExp.TabIndex = 8;
             this.cbGagExp.Text = "Gag experience in game window";
             this.cbGagExp.UseVisualStyleBackColor = true;
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(17, 376);
+            this.btnOk.Location = new System.Drawing.Point(201, 225);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 5;
+            this.btnOk.TabIndex = 17;
             this.btnOk.Text = "Ok";
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(192, 376);
+            this.btnCancel.Location = new System.Drawing.Point(292, 225);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 6;
+            this.btnCancel.TabIndex = 18;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // txtRankGained
             // 
-            this.txtRankGained.Location = new System.Drawing.Point(13, 287);
+            this.txtRankGained.Location = new System.Drawing.Point(311, 118);
             this.txtRankGained.Name = "txtRankGained";
             this.txtRankGained.Size = new System.Drawing.Size(100, 20);
-            this.txtRankGained.TabIndex = 7;
+            this.txtRankGained.TabIndex = 13;
             // 
             // txtLearned
             // 
-            this.txtLearned.Location = new System.Drawing.Point(12, 340);
+            this.txtLearned.Location = new System.Drawing.Point(310, 171);
             this.txtLearned.Name = "txtLearned";
             this.txtLearned.Size = new System.Drawing.Size(100, 20);
-            this.txtLearned.TabIndex = 8;
+            this.txtLearned.TabIndex = 15;
             // 
             // label1
             // 
-            this.label1.Location = new System.Drawing.Point(13, 268);
+            this.label1.Location = new System.Drawing.Point(311, 99);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(255, 16);
             this.label1.TabIndex = 9;
@@ -131,7 +132,7 @@
             // 
             // label2
             // 
-            this.label2.Location = new System.Drawing.Point(13, 321);
+            this.label2.Location = new System.Drawing.Point(311, 152);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(255, 19);
             this.label2.TabIndex = 10;
@@ -140,10 +141,10 @@
             // 
             // btnRankGained
             // 
-            this.btnRankGained.Location = new System.Drawing.Point(207, 287);
+            this.btnRankGained.Location = new System.Drawing.Point(505, 118);
             this.btnRankGained.Name = "btnRankGained";
             this.btnRankGained.Size = new System.Drawing.Size(61, 22);
-            this.btnRankGained.TabIndex = 11;
+            this.btnRankGained.TabIndex = 14;
             this.btnRankGained.Text = "Color...";
             this.btnRankGained.UseVisualStyleBackColor = true;
             this.btnRankGained.Click += new System.EventHandler(this.btnRankGained_Click);
@@ -153,7 +154,7 @@
             this.lblRankGained.BackColor = System.Drawing.Color.Black;
             this.lblRankGained.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblRankGained.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblRankGained.Location = new System.Drawing.Point(118, 287);
+            this.lblRankGained.Location = new System.Drawing.Point(416, 118);
             this.lblRankGained.Name = "lblRankGained";
             this.lblRankGained.Size = new System.Drawing.Size(83, 20);
             this.lblRankGained.TabIndex = 12;
@@ -165,7 +166,7 @@
             this.lblLearned.BackColor = System.Drawing.Color.Black;
             this.lblLearned.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblLearned.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblLearned.Location = new System.Drawing.Point(118, 340);
+            this.lblLearned.Location = new System.Drawing.Point(416, 171);
             this.lblLearned.Name = "lblLearned";
             this.lblLearned.Size = new System.Drawing.Size(83, 20);
             this.lblLearned.TabIndex = 13;
@@ -174,10 +175,10 @@
             // 
             // btnLearned
             // 
-            this.btnLearned.Location = new System.Drawing.Point(207, 340);
+            this.btnLearned.Location = new System.Drawing.Point(505, 171);
             this.btnLearned.Name = "btnLearned";
             this.btnLearned.Size = new System.Drawing.Size(61, 22);
-            this.btnLearned.TabIndex = 14;
+            this.btnLearned.TabIndex = 16;
             this.btnLearned.Text = "Color...";
             this.btnLearned.UseVisualStyleBackColor = true;
             this.btnLearned.Click += new System.EventHandler(this.btnLearned_Click);
@@ -187,7 +188,7 @@
             this.lblNormal.BackColor = System.Drawing.Color.Black;
             this.lblNormal.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNormal.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblNormal.Location = new System.Drawing.Point(118, 240);
+            this.lblNormal.Location = new System.Drawing.Point(416, 71);
             this.lblNormal.Name = "lblNormal";
             this.lblNormal.Size = new System.Drawing.Size(83, 20);
             this.lblNormal.TabIndex = 18;
@@ -196,17 +197,17 @@
             // 
             // btnNormal
             // 
-            this.btnNormal.Location = new System.Drawing.Point(207, 240);
+            this.btnNormal.Location = new System.Drawing.Point(505, 71);
             this.btnNormal.Name = "btnNormal";
             this.btnNormal.Size = new System.Drawing.Size(61, 22);
-            this.btnNormal.TabIndex = 17;
+            this.btnNormal.TabIndex = 12;
             this.btnNormal.Text = "Color...";
             this.btnNormal.UseVisualStyleBackColor = true;
             this.btnNormal.Click += new System.EventHandler(this.btnNormal_Click);
             // 
             // label4
             // 
-            this.label4.Location = new System.Drawing.Point(10, 224);
+            this.label4.Location = new System.Drawing.Point(308, 55);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(258, 13);
             this.label4.TabIndex = 16;
@@ -215,10 +216,10 @@
             // 
             // txtNormal
             // 
-            this.txtNormal.Location = new System.Drawing.Point(13, 240);
+            this.txtNormal.Location = new System.Drawing.Point(311, 71);
             this.txtNormal.Name = "txtNormal";
             this.txtNormal.Size = new System.Drawing.Size(100, 20);
-            this.txtNormal.TabIndex = 15;
+            this.txtNormal.TabIndex = 11;
             // 
             // cbLearningRateNumber
             // 
@@ -226,7 +227,7 @@
             this.cbLearningRateNumber.Location = new System.Drawing.Point(32, 77);
             this.cbLearningRateNumber.Name = "cbLearningRateNumber";
             this.cbLearningRateNumber.Size = new System.Drawing.Size(218, 17);
-            this.cbLearningRateNumber.TabIndex = 19;
+            this.cbLearningRateNumber.TabIndex = 4;
             this.cbLearningRateNumber.Text = "Show LearningRate Numbers e.g. (4/34)";
             this.cbLearningRateNumber.UseVisualStyleBackColor = true;
             // 
@@ -236,7 +237,7 @@
             this.cbLearningRate.Location = new System.Drawing.Point(32, 54);
             this.cbLearningRate.Name = "cbLearningRate";
             this.cbLearningRate.Size = new System.Drawing.Size(156, 17);
-            this.cbLearningRate.TabIndex = 20;
+            this.cbLearningRate.TabIndex = 3;
             this.cbLearningRate.Text = "Show LearningRate Names";
             this.cbLearningRate.UseVisualStyleBackColor = true;
             // 
@@ -252,17 +253,17 @@
             "A to Z",
             "Left to Right",
             "Top to Bottom"});
-            this.comboSort.Location = new System.Drawing.Point(95, 173);
+            this.comboSort.Location = new System.Drawing.Point(370, 29);
             this.comboSort.MaxDropDownItems = 3;
             this.comboSort.Name = "comboSort";
             this.comboSort.Size = new System.Drawing.Size(151, 21);
-            this.comboSort.TabIndex = 21;
+            this.comboSort.TabIndex = 10;
             this.comboSort.Text = "A to Z";
             // 
             // lblSort
             // 
             this.lblSort.AutoSize = true;
-            this.lblSort.Location = new System.Drawing.Point(36, 176);
+            this.lblSort.Location = new System.Drawing.Point(311, 32);
             this.lblSort.Name = "lblSort";
             this.lblSort.Size = new System.Drawing.Size(56, 13);
             this.lblSort.TabIndex = 22;
@@ -271,10 +272,10 @@
             // cbTrackSleep
             // 
             this.cbTrackSleep.AutoSize = true;
-            this.cbTrackSleep.Location = new System.Drawing.Point(32, 100);
+            this.cbTrackSleep.Location = new System.Drawing.Point(32, 99);
             this.cbTrackSleep.Name = "cbTrackSleep";
             this.cbTrackSleep.Size = new System.Drawing.Size(98, 17);
-            this.cbTrackSleep.TabIndex = 23;
+            this.cbTrackSleep.TabIndex = 5;
             this.cbTrackSleep.Text = "Track Sleeping";
             this.cbTrackSleep.UseVisualStyleBackColor = true;
             this.cbTrackSleep.CheckedChanged += new System.EventHandler(this.cbTrackSleep_CheckedChanged);
@@ -282,10 +283,10 @@
             // cbEchoSleep
             // 
             this.cbEchoSleep.AutoSize = true;
-            this.cbEchoSleep.Location = new System.Drawing.Point(40, 123);
+            this.cbEchoSleep.Location = new System.Drawing.Point(40, 122);
             this.cbEchoSleep.Name = "cbEchoSleep";
             this.cbEchoSleep.Size = new System.Drawing.Size(161, 17);
-            this.cbEchoSleep.TabIndex = 24;
+            this.cbEchoSleep.TabIndex = 6;
             this.cbEchoSleep.Text = "Echo to Experience Window";
             this.cbEchoSleep.UseVisualStyleBackColor = true;
             this.cbEchoSleep.CheckedChanged += new System.EventHandler(this.cbEchoSleep_CheckedChanged);
@@ -293,7 +294,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(36, 143);
+            this.label3.Location = new System.Drawing.Point(36, 142);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(71, 13);
             this.label3.TabIndex = 25;
@@ -301,16 +302,27 @@
             // 
             // txtEcho
             // 
-            this.txtEcho.Location = new System.Drawing.Point(113, 140);
+            this.txtEcho.Location = new System.Drawing.Point(113, 139);
             this.txtEcho.Name = "txtEcho";
             this.txtEcho.Size = new System.Drawing.Size(153, 20);
-            this.txtEcho.TabIndex = 26;
+            this.txtEcho.TabIndex = 7;
+            // 
+            // cbShort
+            // 
+            this.cbShort.AutoSize = true;
+            this.cbShort.Location = new System.Drawing.Point(32, 189);
+            this.cbShort.Name = "cbShort";
+            this.cbShort.Size = new System.Drawing.Size(222, 17);
+            this.cbShort.TabIndex = 9;
+            this.cbShort.Text = "Use Short Names for Experience Window";
+            this.cbShort.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(278, 405);
+            this.ClientSize = new System.Drawing.Size(585, 273);
+            this.Controls.Add(this.cbShort);
             this.Controls.Add(this.txtEcho);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.cbEchoSleep);
@@ -371,5 +383,6 @@
         public System.Windows.Forms.TextBox txtEcho;
         public System.Windows.Forms.CheckBox cbTrackSleep;
         public System.Windows.Forms.CheckBox cbEchoSleep;
+        public System.Windows.Forms.CheckBox cbShort;
     }
 }
