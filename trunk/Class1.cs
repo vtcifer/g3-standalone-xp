@@ -8,7 +8,7 @@ namespace Standalone_EXPTracker
 {
     public class Class1 : IPlugin
     {
-        string _VERSION = "1.2.5";
+        string _VERSION = "1.2.8";
 
         #region IPlugin Members
         public IHost _host;                             //Required for plugin
@@ -1051,6 +1051,20 @@ namespace Standalone_EXPTracker
 
         private void ParseClear(string name)
         {
+            switch (name)
+            {
+                case "Lunar Magic":
+                case "Life Magic":
+                case "Holy Magic":
+                case "Elemental Magic":
+                case "Inner Magic":
+                case "Arcane Magic":
+                    name = "Primary Magic";
+                    break;
+                default:
+                    break;
+            }
+
             Skill skill = new Skill();
             if (_skillList.ContainsKey(name))
             {
@@ -1138,14 +1152,6 @@ namespace Standalone_EXPTracker
                             //get the skill info from the hash table
                             Skill skill = (Skill)_skillList[item.name];
                            
-                            //set color of text if ranked, or learned, or normal
-                            if (skill.rankGained == true)
-                                output = _host.get_Variable("ExpTracker.Color.RankGained");
-                            else if (skill.learned == true)
-                                output = _host.get_Variable("ExpTracker.Color.Learned");
-                            else
-                                output = _host.get_Variable("ExpTracker.Color.Normal");
-
                             //Outputs name of skill (short or normal) & ranks
                             if( _host.get_Variable("ExpTracker.ShortNames") == "1")
                                 output = String.Format("{0,7:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
@@ -1169,9 +1175,15 @@ namespace Standalone_EXPTracker
 
                             //Used for #echo >Window Options "   Text "
                             //to preserve white space
-
-                            //output = @" """ + output + @"""";
                             output = " \"" + output + "\"";
+
+                            //set color of text if ranked, or learned, or normal
+                            if (skill.rankGained == true)
+                                output = _host.get_Variable("ExpTracker.Color.RankGained") + output;
+                            else if (skill.learned == true)
+                                output = _host.get_Variable("ExpTracker.Color.Learned") + output;
+                            else
+                                output = _host.get_Variable("ExpTracker.Color.Normal") + output;
 
                             _host.SendText("#echo >Experience " + output);
                         }
@@ -1208,7 +1220,6 @@ namespace Standalone_EXPTracker
         private string FormatTimeSpan(TimeSpan ts)
         {
             string txt = "";
-
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "1")
             {
