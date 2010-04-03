@@ -8,7 +8,7 @@ namespace Standalone_EXPTracker
 {
     public class Class1 : IPlugin
     {
-        string _VERSION = "1.2.8";
+        string _VERSION = "1.3.1";
 
         #region IPlugin Members
         public IHost _host;                             //Required for plugin
@@ -38,7 +38,6 @@ namespace Standalone_EXPTracker
             public bool rankGained = false;         //Used for displaying text in a specific color when rank gained
             public bool learned = false;            //Used for displaying text in a specific color when bits are added to pool
             public int sortLR = 0;                  //Used for sorting As reading, Left to Right
-            public int sortTB = 0;                  //Used for sorting As, Top to Bottom (Based on ALL skills visible)
             public string shortname = "";           //Used for short name display instead of long name
         }
 
@@ -50,7 +49,7 @@ namespace Standalone_EXPTracker
             public string name = "";        //Name of skill
             public string shortname = "";   //Shortened name of skill
             public int sortLR = 0;          //Ordered value based on Reading sort (Left to Right)
-            public int sortTB = 0;          //Ordered value based on top to bottom, THEN left to right 
+            public int sortLearning = 0;    //Ordered value based on top to bottom, THEN left to right 
         }
         #endregion
         #region IPlugin Methods
@@ -310,6 +309,7 @@ namespace Standalone_EXPTracker
             }
             catch (Exception ex)
             {
+                _host.SendText("#echo >Debug \" " + ex.ToString() + "\"");
             }
             return Text;
         }
@@ -435,7 +435,9 @@ namespace Standalone_EXPTracker
             if (_host.get_Variable("ExpTracker.SortType") == "1")
                 form.comboSort.Text = "Left to Right";
             else if (_host.get_Variable("ExpTracker.SortType") == "2")
-                form.comboSort.Text = "Top to Bottom";
+                form.comboSort.Text = "Learning Rate";
+            else if (_host.get_Variable("ExpTracker.SortType") == "3")
+                form.comboSort.Text = "Learning Rate Reverse";
             else
                 form.comboSort.Text = "A to Z";
             
@@ -657,349 +659,295 @@ namespace Standalone_EXPTracker
             double dRank = Double.Parse(rank);
 
             int SortLR = 0;
-            int SortTB = 0;
             string ShortName = "";
             switch (name)
             {
-                case "Bone Armor":
-                    SortLR = 7;
-                    SortTB = 37;
-                    ShortName = "Bone";
-                    break;
-                case "Cloth Armor":
-                    SortLR = 6;
-                    SortTB = 3;
-                    ShortName = "Cloth";
-                    break;
-                case "Heavy Chain":
-                    SortLR = 3;
-                    SortTB = 35;
-                    ShortName = "HC";
-                    break;
-                case "Heavy Plate":
-                    SortLR = 5;
-                    SortTB = 36;
-                    ShortName = "HP";
+            //Armor skills
+                case "Shield Usage":
+                    SortLR = 0;
+                    ShortName = "Shield";
                     break;
                 case "Leather Armor":
                     SortLR = 1;
-                    SortTB = 34;
                     ShortName = "Leather";
                     break;
                 case "Light Chain":
                     SortLR = 2;
-                    SortTB = 1;
                     ShortName = "LC";
+                    break;
+                case "Heavy Chain":
+                    SortLR = 3;
+                    ShortName = "HC";
                     break;
                 case "Light Plate":
                     SortLR = 4;
-                    SortTB = 2;
                     ShortName = "LP";
                     break;
-                case "Shield Usage":
-                    SortLR = 0;
-                    SortTB = 0;
-                    ShortName = "Shield";
+                case "Heavy Plate":
+                    SortLR = 5;
+                    ShortName = "HP";
                     break;
-                case "Brawling":
-                    SortLR = 31;
-                    SortTB = 49;
-                    ShortName = "Brawl";
+                case "Cloth Armor":
+                    SortLR = 6;
+                    ShortName = "Cloth";
                     break;
-                case "Composite Bow":
-                    SortLR = 22;
-                    SortTB = 11;
-                    ShortName = "C Bow";
+                case "Bone Armor":
+                    SortLR = 7;
+                    ShortName = "Bone";
                     break;
-                case "Halberds":
-                    SortLR = 28;
-                    SortTB = 14;
-                    ShortName = "Halberd";
-                    break;
-                case "Heavy Blunt":
-                    SortLR = 16;
-                    SortTB = 8;
-                    ShortName = "HB";
-                    break;
-                case "Heavy Crossbow":
-                    SortLR = 24;
-                    SortTB = 12;
-                    ShortName = "HX";
-                    break;
-                case "Heavy Edged":
-                    SortLR = 12;
-                    SortTB = 6;
-                    ShortName = "HE";
-                    break;
-                case "Heavy Thrown":
-                    SortLR = 30;
-                    SortTB = 15;
-                    ShortName = "HT";
-                    break;
-                case "Light Blunt":
-                    SortLR = 14;
-                    SortTB = 07;
-                    ShortName = "LB";
-                    break;
-                case "Light Crossbow":
-                    SortLR = 23;
-                    SortTB = 45;
-                    ShortName = "LX";
-                    break;
-                case "Light Edged":
-                    SortLR = 10;
-                    SortTB = 05;
-                    ShortName = "LE";
-                    break;
-                case "Light Thrown":
-                    SortLR = 29;
-                    SortTB = 48;
-                    ShortName = "LT";
-                    break;
-                case "Long Bow":
-                    SortLR = 21;
-                    SortTB = 44;
-                    ShortName = "L Bow";
-                    break;
-                case "Medium Blunt":
-                    SortLR = 15;
-                    SortTB = 41;
-                    ShortName = "MB";
-                    break;
-                case "Medium Edged":
-                    SortLR = 11;
-                    SortTB = 39;
-                    ShortName = "ME";
-                    break;
-                case "Multi Opponent":
-                    SortLR = 9;
-                    SortTB = 38;
-                    ShortName = "MO";
-                    break;
-                case "Offhand Weapon":
-                    SortLR = 32;
-                    SortTB = 16;
-                    ShortName = "Offhand";
-                    break;
+
+            //Weapon Skills
                 case "Parry Ability":
-                    SortLR = 8;
-                    SortTB = 4;
+                    SortLR = 100;
                     ShortName = "Parry";
                     break;
-                case "Pikes":
-                    SortLR = 27;
-                    SortTB = 47;
-                    ShortName = "Pike";
+                case "Multi Opponent":
+                    SortLR = 101;
+                    ShortName = "MO";
                     break;
-                case "Quarter Staff":
-                    SortLR = 26;
-                    SortTB = 13;
-                    ShortName = "Q Staff";
+                case "Light Edged":
+                    SortLR = 102;
+                    ShortName = "LE";
                     break;
-                case "Short Bow":
-                    SortLR = 20;
-                    SortTB = 10;
-                    ShortName = "S Bow";
+                case "Medium Edged":
+                    SortLR = 103;
+                    ShortName = "ME";
                     break;
-                case "Short Staff":
-                    SortLR = 25;
-                    SortTB = 46;
-                    ShortName = "S Staff";
+                case "Heavy Edged":
+                    SortLR = 104;
+                    ShortName = "HE";
+                    break;
+                case "Twohanded Edged":
+                    SortLR = 105;
+                    ShortName = "2HE";
+                    break;
+                case "Light Blunt":
+                    SortLR = 106;
+                    ShortName = "LB";
+                    break;
+                case "Medium Blunt":
+                    SortLR = 107;
+                    ShortName = "MB";
+                    break;
+                case "Heavy Blunt":
+                    SortLR = 108;
+                    ShortName = "HB";
+                    break;
+                case "Twohanded Blunt":
+                    SortLR = 109;
+                    ShortName = "2HB";
                     break;
                 case "Slings":
-                    SortLR = 18;
-                    SortTB = 9;
+                    SortLR = 110;
                     ShortName = "Sling";
                     break;
                 case "Staff Sling":
-                    SortLR = 19;
-                    SortTB = 43;
+                    SortLR = 111;
                     ShortName = "S Sling";
                     break;
-                case "Twohanded Blunt":
-                    SortLR = 17;
-                    SortTB = 42;
-                    ShortName = "2HB";
+                case "Short Bow":
+                    SortLR = 112;
+                    ShortName = "S Bow";
                     break;
-                case "Twohanded Edged":
-                    SortLR = 13;
-                    SortTB = 40;
-                    ShortName = "2HE";
+                case "Long Bow":
+                    SortLR = 113;
+                    ShortName = "L Bow";
                     break;
-                case "Harness Ability":
-                    SortLR = 34;
-                    SortTB = 17;
-                    ShortName = "Harness";
+                case "Composite Bow":
+                    SortLR = 114;
+                    ShortName = "C Bow";
                     break;
-                case "Arcana":
-                    SortLR = 36;
-                    SortTB = 18;
-                    ShortName = "Arcana";
+                case "Light Crossbow":
+                    SortLR = 115;
+                    ShortName = "LX";
                     break;
-                case "Power Perceive":
-                    SortLR = 35;
-                    SortTB = 51;
-                    ShortName = "PP";
+                case "Heavy Crossbow":
+                    SortLR = 116;
+                    ShortName = "HX";
                     break;
+                case "Short Staff":
+                    SortLR = 117;
+                    ShortName = "S Staff";
+                    break;
+                case "Quarter Staff":
+                    SortLR = 118;
+                    ShortName = "Q Staff";
+                    break;
+                case "Pikes":
+                    SortLR = 119;
+                    ShortName = "Pike";
+                    break;
+                case "Halberds":
+                    SortLR = 120;
+                    ShortName = "Halberd";
+                    break;
+                case "Light Thrown":
+                    SortLR = 121;
+                    ShortName = "LT";
+                    break;
+                case "Heavy Thrown":
+                    SortLR = 122;
+                    ShortName = "HT";
+                    break;
+                case "Brawling":
+                    SortLR = 123;
+                    ShortName = "Brawl";
+                    break;
+                case "Offhand Weapon":
+                    SortLR = 124;
+                    ShortName = "Offhand";
+                    break;
+
+                //Magic Skills
                 case "Lunar Magic":
-                case "Life Magic": 
+                case "Life Magic":
                 case "Holy Magic":
                 case "Elemental Magic":
                 case "Inner Magic":
                 case "Arcane Magic":
                     name = "Primary Magic";
-                    SortLR = 33;
-                    SortTB = 50;
+                    SortLR = 200;
                     ShortName = "Magic";
                     break;
+                case "Harness Ability":
+                    SortLR = 201;
+                    ShortName = "Harness";
+                    break;
+                case "Power Perceive":
+                    SortLR = 201;
+                    ShortName = "PP";
+                    break;
+                case "Arcana":
+                    SortLR = 203;
+                    ShortName = "Arcana";
+                    break;
                 case "Targeted Magic":
-                    SortLR = 37;
-                    SortTB = 52;
+                    SortLR = 204;
                     ShortName = "TM";
                     break;
-                case "Animal Lore":
-                    SortLR = 59;
-                    SortTB = 63;
-                    ShortName = "Animal";
-                    break;
-                case "Appraisal":
-                    SortLR = 56;
-                    SortTB = 28;
-                    ShortName = "App";
-                    break;
-                case "Astrology":
-                    SortLR = 64;
-                    SortTB = 32;
-                    ShortName = "Astro";
-                    break;
-                case "Mechanical Lore":
-                    SortLR = 54;
-                    SortTB = 27;
-                    ShortName = "Mech";
-                    break;
-                case "Percussions":
-                    SortLR = 60;
-                    SortTB = 30;
-                    ShortName = "Percuss";
-                    break;
-                case "Scholarship":
-                    SortLR = 53;
-                    SortTB = 60;
-                    ShortName = "Scholar";
-                    break;
-                case "Strings":
-                    SortLR = 61;
-                    SortTB = 64;
-                    ShortName = "Strings";
-                    break;
-                case "Teaching":
-                    SortLR = 57;
-                    SortTB = 62;
-                    ShortName = "Teach";
-                    break;
-                case "Winds":
-                    SortLR = 62;
-                    SortTB = 31;
-                    ShortName = "Winds";
-                    break;
-                case "Vocals":
-                    SortLR = 63;
-                    SortTB = 65;
-                    ShortName = "Vocals";
-                    break;
-                case "Trading":
-                    SortLR = 58;
-                    SortTB = 29;
-                    ShortName = "Trade";
-                    break;
-                case "Empathy":
-                    SortLR = 65;
-                    SortTB = 66;
-                    ShortName = "Empathy";
-                    break;
-                case "Thanatology":
-                    SortLR = 66;
-                    SortTB = 33;
-                    ShortName = "Than";
-                    break;
-                case "Climbing":
-                    SortLR = 39;
-                    SortTB = 53;
-                    ShortName = "Climb";
-                    break;
-                case "Disarm Traps":
-                    SortLR = 44;
-                    SortTB = 22;
-                    ShortName = "Disarm";
-                    break;
-                case "Escaping":
-                    SortLR = 49;
-                    SortTB = 58;
-                    ShortName = "Escape";
-                    break;
+
+            //Survival Skills
                 case "Evasion":
-                    SortLR = 38;
-                    SortTB = 19;
+                    SortLR = 300;
                     ShortName = "Evade";
                     break;
-                case "First Aid":
-                    SortLR = 47;
-                    SortTB = 57;
-                    ShortName = "FA";
+                case "Climbing":
+                    SortLR = 301;
+                    ShortName = "Climb";
                     break;
-                case "Foraging":
-                    SortLR = 48;
-                    SortTB = 24;
-                    ShortName = "Forage";
+                case "Perception":
+                    SortLR = 302;
+                    ShortName = "Percep";
+                    break;
+                case "Scouting":
+                    SortLR = 303;
+                    ShortName = "Scout";
                     break;
                 case "Hiding":
-                    SortLR = 42;
-                    SortTB = 21;
+                    SortLR = 304;
                     ShortName = "Hide";
                     break;
                 case "Lockpicking":
-                    SortLR = 43;
-                    SortTB = 55;
+                    SortLR = 305;
                     ShortName = "Locks";
                     break;
-                case "Perception":
-                    SortLR = 40;
-                    SortTB = 20;
-                    ShortName = "Percep";
-                    break;
-                case "Skinning":
-                    SortLR = 51;
-                    SortTB = 59;
-                    ShortName = "Skin";
+                case "Disarm Traps":
+                    SortLR = 306;
+                    ShortName = "Disarm";
                     break;
                 case "Stalking":
-                    SortLR = 45;
-                    SortTB = 56;
+                    SortLR = 307;
                     ShortName = "Stalk";
                     break;
                 case "Stealing":
-                    SortLR = 46;
-                    SortTB = 23;
+                    SortLR = 308;
                     ShortName = "Steal";
                     break;
-                case "Swimming":
-                    SortLR = 52;
-                    SortTB = 26;
-                    ShortName = "Swim";
+                case "First Aid":
+                    SortLR = 309;
+                    ShortName = "FA";
+                    break;
+                case "Foraging":
+                    SortLR = 310;
+                    ShortName = "Forage";
+                    break;
+                case "Escaping":
+                    SortLR = 311;
+                    ShortName = "Escape";
                     break;
                 case "Backstab":
-                    SortLR = 50;
-                    SortTB = 25;
+                    SortLR = 312;
                     ShortName = "BS";
                     break;
-                case "Scouting":
-                    SortLR = 41;
-                    SortTB = 54;
-                    ShortName = "Scout";
+                case "Skinning":
+                    SortLR = 313;
+                    ShortName = "Skin";
                     break;
+                case "Swimming":
+                    SortLR = 314;
+                    ShortName = "Swim";
+                    break;
+
+            //Lore Skills
+                case "Scholarship":
+                    SortLR = 400;
+                    ShortName = "Scholar";
+                    break;
+                case "Mechanical Lore":
+                    SortLR = 401;
+                    ShortName = "Mech";
+                    break;
+                case "Musical Theory":
+                    SortLR = 402;
+                    ShortName = "Music";
+                    break;
+                case "Appraisal":
+                    SortLR = 403;
+                    ShortName = "App";
+                    break;
+                case "Teaching":
+                    SortLR = 404;
+                    ShortName = "Teach";
+                    break;
+                case "Trading":
+                    SortLR = 405;
+                    ShortName = "Trade";
+                    break;
+                case "Animal Lore":
+                    SortLR = 406;
+                    ShortName = "Animal";
+                    break;
+                case "Percussions":
+                    SortLR = 407;
+                    ShortName = "Percuss";
+                    break;
+                case "Strings":
+                    SortLR = 408;
+                    ShortName = "Strings";
+                    break;
+                case "Winds":
+                    SortLR = 409;
+                    ShortName = "Winds";
+                    break;
+                case "Vocals":
+                    SortLR = 410;
+                    ShortName = "Vocals";
+                    break;
+                case "Astrology":
+                    SortLR = 411;
+                    ShortName = "Astro";
+                    break;
+                case "Empathy":
+                    SortLR = 412;
+                    ShortName = "Empathy";
+                    break;
+                case "Thanatology":
+                    SortLR = 413;
+                    ShortName = "Than";
+                    break;
+                
                 default:
-                    SortLR = 100;
-                    SortTB = 100;
+                    SortLR = 500;
                     ShortName = "Err!";
                     break;
             }
@@ -1021,7 +969,6 @@ namespace Standalone_EXPTracker
                 if (type == 2)
                     skill.rankGained = true;
                 skill.sortLR = SortLR;
-                skill.sortTB = SortTB;
                 skill.shortname = ShortName;
                 _skillList[name] = skill;
             }
@@ -1034,7 +981,6 @@ namespace Standalone_EXPTracker
                     rank = dRank,
                     startRank = dRank,
                     sortLR = SortLR,
-                    sortTB = SortTB,
                     shortname = ShortName
                 };
                 if (type == 1)
@@ -1092,11 +1038,18 @@ namespace Standalone_EXPTracker
                 return Comparer.Default.Compare(((Sortskill)x).sortLR, ((Sortskill)y).sortLR);
             }
         }
-        public class MyComparerTB : IComparer
+        public class MyComparerLearning : IComparer
         {
             public int Compare(object x, object y)
             {
-                return Comparer.Default.Compare(((Sortskill)x).sortTB, ((Sortskill)y).sortTB);
+                return Comparer.Default.Compare(((Sortskill)y).sortLearning, ((Sortskill)x).sortLearning);
+            }
+        }
+        public class MyComparerLearningRev : IComparer
+        {
+            public int Compare(object x, object y)
+            {
+                return Comparer.Default.Compare(((Sortskill)x).sortLearning, ((Sortskill)y).sortLearning);
             }
         }
         private void ShowExperience()
@@ -1121,7 +1074,7 @@ namespace Standalone_EXPTracker
                             {
                                 name = sk.Key.ToString(),
                                 sortLR = ((Skill)sk.Value).sortLR,
-                                sortTB = ((Skill)sk.Value).sortTB
+                                sortLearning = ((Skill)sk.Value).iLearningRate
                             };
                             sortList.Add(sortSkill);
                         }
@@ -1130,9 +1083,12 @@ namespace Standalone_EXPTracker
                     //1: Reading sort 
                     if (_host.get_Variable("ExpTracker.SortType") == "1")
                         sortList.Sort(new MyComparerLR());
-                    //2: Top to Bottom 
+                    //2: By Learning Rate
                     else if (_host.get_Variable("ExpTracker.SortType") == "2")
-                        sortList.Sort(new MyComparerTB());
+                        sortList.Sort(new MyComparerLearning());
+                    //3: By Learning Rate Reverse
+                    else if (_host.get_Variable("ExpTracker.SortType") == "3")
+                        sortList.Sort(new MyComparerLearningRev());
                     //0/Default: Alphabetical
                     else
                         sortList.Sort(new MyComparer());

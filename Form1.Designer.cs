@@ -246,13 +246,15 @@
             this.comboSort.AutoCompleteCustomSource.AddRange(new string[] {
             "A to Z",
             "Left to Right",
-            "Top to Botom"});
+            "Learning Rate",
+            "Learning Rate Reverse"});
             this.comboSort.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.comboSort.FormattingEnabled = true;
             this.comboSort.Items.AddRange(new object[] {
             "A to Z",
             "Left to Right",
-            "Top to Bottom"});
+            "Learning Rate",
+            "Learning Rate Reverse"});
             this.comboSort.Location = new System.Drawing.Point(370, 29);
             this.comboSort.MaxDropDownItems = 3;
             this.comboSort.Name = "comboSort";
