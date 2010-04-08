@@ -8,7 +8,7 @@ namespace Standalone_EXPTracker
 {
     public class Class1 : IPlugin
     {
-        string _VERSION = "1.3.1";
+        string _VERSION = "1.4.0";
 
         #region IPlugin Members
         public IHost _host;                             //Required for plugin
@@ -22,6 +22,19 @@ namespace Standalone_EXPTracker
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
         private bool _sleeping = false;
         private string _mindState = "";                 //Used for converting mindstate parsed to an integer for GenieVariable
+        
+        //The following hashtables are used as alternatives to switch statments using string data
+        //which can have rather bad run time
+        private Hashtable MasterSkill;
+        private class ItemMasterSkill
+        {
+            public int SortLR;
+            public string ShortName;
+        }
+        
+        private Hashtable MasterMindState;
+        private Hashtable MasterLearnRate;
+
 
         // enabled appears unused at the moment
         private bool _enabled = true;
@@ -109,6 +122,137 @@ namespace Standalone_EXPTracker
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "")
                 _host.set_Variable("ExpTracker.ShortNames", "0");
+
+            //create AND popluate the master hashtables
+            MasterSkill = new Hashtable(72);
+    //Armor skills
+            MasterSkill.Add("Shield Usage", new ItemMasterSkill {SortLR = 0, ShortName = "Shield"});
+            MasterSkill.Add("Leather Armor", new ItemMasterSkill {SortLR = 1, ShortName = "Leather"});
+            MasterSkill.Add("Light Chain", new ItemMasterSkill {SortLR = 2, ShortName = "LC"});
+            MasterSkill.Add("Heavy Chain", new ItemMasterSkill {SortLR = 3, ShortName = "HC"});
+            MasterSkill.Add("Light Plate", new ItemMasterSkill {SortLR = 4, ShortName = "LP"});
+            MasterSkill.Add("Heavy Plate", new ItemMasterSkill {SortLR = 5, ShortName = "HP"});
+            MasterSkill.Add("Cloth Armor", new ItemMasterSkill {SortLR = 6, ShortName = "Cloth"});
+            MasterSkill.Add("Bone Armor", new ItemMasterSkill {SortLR = 7, ShortName = "Bone" });
+    //Weapon Skills            
+            MasterSkill.Add("Parry Ability", new ItemMasterSkill {SortLR = 100, ShortName = "Parry"});
+            MasterSkill.Add("Multi Opponent", new ItemMasterSkill {SortLR = 101, ShortName = "MO"});
+            MasterSkill.Add("Light Edged", new ItemMasterSkill {SortLR = 102, ShortName = "LE"});
+            MasterSkill.Add("Medium Edged", new ItemMasterSkill {SortLR = 103, ShortName = "ME"});
+            MasterSkill.Add("Heavy Edged", new ItemMasterSkill {SortLR = 104, ShortName = "HE"});
+            MasterSkill.Add("Twohanded Edged", new ItemMasterSkill {SortLR = 105, ShortName = "2HE"});
+            MasterSkill.Add("Light Blunt", new ItemMasterSkill {SortLR = 106, ShortName = "LB"});
+            MasterSkill.Add("Medium Blunt", new ItemMasterSkill {SortLR = 107, ShortName = "MB"});
+            MasterSkill.Add("Heavy Blunt", new ItemMasterSkill {SortLR = 108, ShortName = "HB"});
+            MasterSkill.Add("Twohanded Blunt", new ItemMasterSkill {SortLR = 109, ShortName = "2HB"});
+            MasterSkill.Add("Slings", new ItemMasterSkill {SortLR = 110, ShortName = "Sling"});
+            MasterSkill.Add("Staff Sling", new ItemMasterSkill {SortLR = 111, ShortName = "S Sling"});
+            MasterSkill.Add("Short Bow", new ItemMasterSkill {SortLR = 112, ShortName = "S Bow"});
+            MasterSkill.Add("Long Bow", new ItemMasterSkill {SortLR = 113, ShortName = "L Bow"});
+            MasterSkill.Add("Composite Bow", new ItemMasterSkill {SortLR = 114, ShortName = "C Bow"});
+            MasterSkill.Add("Light Crossbow", new ItemMasterSkill {SortLR = 115, ShortName = "LX"});
+            MasterSkill.Add("Heavy Crossbow", new ItemMasterSkill {SortLR = 116, ShortName = "HX"});
+            MasterSkill.Add("Short Staff", new ItemMasterSkill {SortLR = 117, ShortName = "S Staff"});
+            MasterSkill.Add("Quarter Staff", new ItemMasterSkill {SortLR = 118, ShortName = "Q Staff"});
+            MasterSkill.Add("Pikes", new ItemMasterSkill {SortLR = 119, ShortName = "Pike"});
+            MasterSkill.Add("Halberds", new ItemMasterSkill {SortLR = 120, ShortName = "Halberd"});
+            MasterSkill.Add("Light Thrown", new ItemMasterSkill {SortLR = 121, ShortName = "LT"});
+            MasterSkill.Add("Heavy Thrown", new ItemMasterSkill {SortLR = 122, ShortName = "HT"});
+            MasterSkill.Add("Brawling", new ItemMasterSkill {SortLR = 123, ShortName = "Brawl"});
+            MasterSkill.Add("Offhand Weapon", new ItemMasterSkill { SortLR = 124, ShortName = "Offhand"});
+    //Magic Skills
+            MasterSkill.Add("Lunar Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
+            MasterSkill.Add("Holy Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
+            MasterSkill.Add("Elemental Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
+            MasterSkill.Add("Inner Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
+            MasterSkill.Add("Arcane Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
+            MasterSkill.Add("Harness Ability", new ItemMasterSkill {SortLR = 201, ShortName = "Harness"});
+            MasterSkill.Add("Power Perceive", new ItemMasterSkill {SortLR = 202, ShortName = "PP"});
+            MasterSkill.Add("Arcana", new ItemMasterSkill {SortLR = 203, ShortName = "Arcana"});
+            MasterSkill.Add("Targeted Magic", new ItemMasterSkill {SortLR = 204, ShortName = "TM"});
+    //Survival Skills
+            MasterSkill.Add("Evasion", new ItemMasterSkill {SortLR = 300, ShortName = "Evade"});
+            MasterSkill.Add("Climbing", new ItemMasterSkill {SortLR = 301, ShortName = "Climb"});
+            MasterSkill.Add("Perception", new ItemMasterSkill {SortLR = 302, ShortName = "Percep"});
+            MasterSkill.Add("Scouting", new ItemMasterSkill {SortLR = 303, ShortName = "Scout"});
+            MasterSkill.Add("Hiding", new ItemMasterSkill {SortLR = 304, ShortName = "Hide"});
+            MasterSkill.Add("Lockpicking", new ItemMasterSkill {SortLR = 305, ShortName = "Locks"});
+            MasterSkill.Add("Disarm Traps", new ItemMasterSkill {SortLR = 306, ShortName = "Disarm"});
+            MasterSkill.Add("Stalking", new ItemMasterSkill {SortLR = 307, ShortName = "Stalk"});
+            MasterSkill.Add("Stealing", new ItemMasterSkill {SortLR = 308, ShortName = "Steal"});
+            MasterSkill.Add("First Aid", new ItemMasterSkill {SortLR = 309, ShortName = "FA"});
+            MasterSkill.Add("Foraging", new ItemMasterSkill {SortLR = 310, ShortName = "Forage"});
+            MasterSkill.Add("Escaping", new ItemMasterSkill {SortLR = 311, ShortName = "Escape"});
+            MasterSkill.Add("Backstab", new ItemMasterSkill {SortLR = 312, ShortName = "BS"});
+            MasterSkill.Add("Skinning", new ItemMasterSkill {SortLR = 313, ShortName = "Skin"});
+            MasterSkill.Add("Swimming", new ItemMasterSkill {SortLR = 314, ShortName = "Swim"});
+    //Lore Skills
+            MasterSkill.Add("Scholarship", new ItemMasterSkill {SortLR = 400, ShortName = "Scholar"});
+            MasterSkill.Add("Mechanical Lore", new ItemMasterSkill {SortLR = 401, ShortName = "Mech"});
+            MasterSkill.Add("Musical Theory", new ItemMasterSkill {SortLR = 402, ShortName = "Music"});
+            MasterSkill.Add("Appraisal", new ItemMasterSkill {SortLR = 403, ShortName = "App"});
+            MasterSkill.Add("Teaching", new ItemMasterSkill {SortLR = 404, ShortName = "Teach"});
+            MasterSkill.Add("Trading", new ItemMasterSkill {SortLR = 405, ShortName = "Trade"});
+            MasterSkill.Add("Animal Lore", new ItemMasterSkill {SortLR = 406, ShortName = "Animal"});
+            MasterSkill.Add("Percussions", new ItemMasterSkill {SortLR = 407, ShortName = "Percuss"});
+            MasterSkill.Add("Strings", new ItemMasterSkill {SortLR = 408, ShortName = "Strings"});
+            MasterSkill.Add("Winds", new ItemMasterSkill {SortLR = 409, ShortName = "Winds"});
+            MasterSkill.Add("Vocals", new ItemMasterSkill {SortLR = 410, ShortName = "Vocals"});
+            MasterSkill.Add("Astrology", new ItemMasterSkill {SortLR = 411, ShortName = "Astro"});
+            MasterSkill.Add("Empathy", new ItemMasterSkill {SortLR = 412, ShortName = "Empathy"});
+            MasterSkill.Add("Thanatology", new ItemMasterSkill {SortLR = 413, ShortName = "Than"});
+
+
+            MasterMindState = new Hashtable(12);
+            MasterMindState.Add("clear", 0);
+            MasterMindState.Add("fluid", 1);
+            MasterMindState.Add("murky", 2);
+            MasterMindState.Add("very murky", 3);
+            MasterMindState.Add("thick", 4);
+            MasterMindState.Add("very thick", 5);
+            MasterMindState.Add("dense", 6);
+            MasterMindState.Add("very dense", 7);
+            MasterMindState.Add("stagnant", 8);
+            MasterMindState.Add("very stagnant", 9);
+            MasterMindState.Add("frozen", 10);
+            MasterMindState.Add("very frozen", 11);
+
+            MasterLearnRate = new Hashtable(35);
+            MasterLearnRate.Add("clear", 0);
+            MasterLearnRate.Add("dabbling", 1);
+            MasterLearnRate.Add("perusing",  2);
+            MasterLearnRate.Add("learning",  3);
+            MasterLearnRate.Add("thoughtful",  4);
+            MasterLearnRate.Add("thinking",  5);
+            MasterLearnRate.Add("considering",  6);
+            MasterLearnRate.Add("pondering",  7);
+            MasterLearnRate.Add("ruminating",  8);
+            MasterLearnRate.Add("concentrating", 9);
+            MasterLearnRate.Add("attentive", 10);
+            MasterLearnRate.Add("deliberative", 11);
+            MasterLearnRate.Add("interested", 12);
+            MasterLearnRate.Add("examining", 13);
+            MasterLearnRate.Add("understanding", 14);
+            MasterLearnRate.Add("absorbing", 15);
+            MasterLearnRate.Add("intrigued", 16);
+            MasterLearnRate.Add("scrutinizing", 17);
+            MasterLearnRate.Add("analyzing", 18);
+            MasterLearnRate.Add("studious", 19);
+            MasterLearnRate.Add("focused", 20);
+            MasterLearnRate.Add("very focused", 21);
+            MasterLearnRate.Add("engaged", 22);
+            MasterLearnRate.Add("very engaged", 23);
+            MasterLearnRate.Add("cogitating", 24);
+            MasterLearnRate.Add("fascinated", 25);
+            MasterLearnRate.Add("captivated", 26);
+            MasterLearnRate.Add("engrossed", 27);
+            MasterLearnRate.Add("riveted", 28);
+            MasterLearnRate.Add("very riveted", 29);
+            MasterLearnRate.Add("rapt", 30);
+            MasterLearnRate.Add("very rapt", 31);
+            MasterLearnRate.Add("enthralled", 32);
+            MasterLearnRate.Add("nearly locked", 33);
+            MasterLearnRate.Add("mind lock", 34);
         }
 
         //Required for Plugin - Called when Genie needs the name of the plugin (On menu)
@@ -485,130 +629,19 @@ namespace Standalone_EXPTracker
         private void ParseMindState(string text)
         {
             int mindState = 0;
-
             _mindState = text;
-            switch (_mindState)
-            {
-                case "clear":
-                    mindState = 0;
-                    break;
-                case "fluid":
-                    mindState = 1;
-                    break;
-                case "murky":
-                    mindState = 2;
-                    break;
-                case "very murky":
-                    mindState = 3;
-                    break;
-                case "thick":
-                    mindState = 4;
-                    break;
-                case "very thick":
-                    mindState = 5;
-                    break;
-                case "dense":
-                    mindState = 6;
-                    break;
-                case "very dense":
-                    mindState = 7;
-                    break;
-                case "stagnant":
-                    mindState = 8;
-                    break;
-                case "very stagnant":
-                    mindState = 9;
-                    break;
-                case "frozen":
-                    mindState = 10;
-                    break;
-                case "very frozen":
-                    mindState = 11;
-                    break;
-                default:
-                    break;
-            }
+            if ( MasterMindState.Contains(_mindState) )
+                mindState = (int) MasterMindState[_mindState];
+            
             _host.set_Variable("MindState", mindState.ToString());
         }
 
         private int GetLearningRateInt(string skillRate)
         {
-            switch (skillRate)
-            {
-                case "clear":
-                    return 0;
-                case "dabbling":
-                    return 1;
-                case "perusing":
-                    return 2;
-                case "learning":
-                    return 3;
-                case "thoughtful":
-                    return 4;
-                case "thinking":
-                    return 5;
-                case "considering":
-                    return 6;
-                case "pondering":
-                    return 7;
-                case "ruminating":
-                    return 8;
-                case "concentrating":
-                    return 9;
-                case "attentive":
-                    return 10;
-                case "deliberative":
-                    return 11;
-                case "interested":
-                    return 12;
-                case "examining":
-                    return 13;
-                case "understanding":
-                    return 14;
-                case "absorbing":
-                    return 15;
-                case "intrigued":
-                    return 16;
-                case "scrutinizing":
-                    return 17;
-                case "analyzing":
-                    return 18;
-                case "studious":
-                    return 19;
-                case "focused":
-                    return 20;
-                case "very focused":
-                    return 21;
-                case "engaged":
-                    return 22;
-                case "very engaged":
-                    return 23;
-                case "cogitating":
-                    return 24;
-                case "fascinated":
-                    return 25;
-                case "captivated":
-                    return 26;
-                case "engrossed":
-                    return 27;
-                case "riveted":
-                    return 28;
-                case "very riveted":
-                    return 29;
-                case "rapt":
-                    return 30;
-                case "very rapt":
-                    return 31;
-                case "enthralled":
-                    return 32;
-                case "nearly locked":
-                    return 33;
-                case "mind lock":
-                    return 34;
-                default:
-                    return -1;
-            }
-
+            if ( MasterLearnRate.Contains(skillRate) )
+                return (int)MasterLearnRate[skillRate];
+            else
+                return -1;
         }
 
         private void ParseExperience(string line, int type)
@@ -660,296 +693,17 @@ namespace Standalone_EXPTracker
 
             int SortLR = 0;
             string ShortName = "";
-            switch (name)
+            if (MasterSkill.Contains(name))
             {
-            //Armor skills
-                case "Shield Usage":
-                    SortLR = 0;
-                    ShortName = "Shield";
-                    break;
-                case "Leather Armor":
-                    SortLR = 1;
-                    ShortName = "Leather";
-                    break;
-                case "Light Chain":
-                    SortLR = 2;
-                    ShortName = "LC";
-                    break;
-                case "Heavy Chain":
-                    SortLR = 3;
-                    ShortName = "HC";
-                    break;
-                case "Light Plate":
-                    SortLR = 4;
-                    ShortName = "LP";
-                    break;
-                case "Heavy Plate":
-                    SortLR = 5;
-                    ShortName = "HP";
-                    break;
-                case "Cloth Armor":
-                    SortLR = 6;
-                    ShortName = "Cloth";
-                    break;
-                case "Bone Armor":
-                    SortLR = 7;
-                    ShortName = "Bone";
-                    break;
-
-            //Weapon Skills
-                case "Parry Ability":
-                    SortLR = 100;
-                    ShortName = "Parry";
-                    break;
-                case "Multi Opponent":
-                    SortLR = 101;
-                    ShortName = "MO";
-                    break;
-                case "Light Edged":
-                    SortLR = 102;
-                    ShortName = "LE";
-                    break;
-                case "Medium Edged":
-                    SortLR = 103;
-                    ShortName = "ME";
-                    break;
-                case "Heavy Edged":
-                    SortLR = 104;
-                    ShortName = "HE";
-                    break;
-                case "Twohanded Edged":
-                    SortLR = 105;
-                    ShortName = "2HE";
-                    break;
-                case "Light Blunt":
-                    SortLR = 106;
-                    ShortName = "LB";
-                    break;
-                case "Medium Blunt":
-                    SortLR = 107;
-                    ShortName = "MB";
-                    break;
-                case "Heavy Blunt":
-                    SortLR = 108;
-                    ShortName = "HB";
-                    break;
-                case "Twohanded Blunt":
-                    SortLR = 109;
-                    ShortName = "2HB";
-                    break;
-                case "Slings":
-                    SortLR = 110;
-                    ShortName = "Sling";
-                    break;
-                case "Staff Sling":
-                    SortLR = 111;
-                    ShortName = "S Sling";
-                    break;
-                case "Short Bow":
-                    SortLR = 112;
-                    ShortName = "S Bow";
-                    break;
-                case "Long Bow":
-                    SortLR = 113;
-                    ShortName = "L Bow";
-                    break;
-                case "Composite Bow":
-                    SortLR = 114;
-                    ShortName = "C Bow";
-                    break;
-                case "Light Crossbow":
-                    SortLR = 115;
-                    ShortName = "LX";
-                    break;
-                case "Heavy Crossbow":
-                    SortLR = 116;
-                    ShortName = "HX";
-                    break;
-                case "Short Staff":
-                    SortLR = 117;
-                    ShortName = "S Staff";
-                    break;
-                case "Quarter Staff":
-                    SortLR = 118;
-                    ShortName = "Q Staff";
-                    break;
-                case "Pikes":
-                    SortLR = 119;
-                    ShortName = "Pike";
-                    break;
-                case "Halberds":
-                    SortLR = 120;
-                    ShortName = "Halberd";
-                    break;
-                case "Light Thrown":
-                    SortLR = 121;
-                    ShortName = "LT";
-                    break;
-                case "Heavy Thrown":
-                    SortLR = 122;
-                    ShortName = "HT";
-                    break;
-                case "Brawling":
-                    SortLR = 123;
-                    ShortName = "Brawl";
-                    break;
-                case "Offhand Weapon":
-                    SortLR = 124;
-                    ShortName = "Offhand";
-                    break;
-
-                //Magic Skills
-                case "Lunar Magic":
-                case "Life Magic":
-                case "Holy Magic":
-                case "Elemental Magic":
-                case "Inner Magic":
-                case "Arcane Magic":
+                SortLR = ((ItemMasterSkill)MasterSkill[name]).SortLR;
+                ShortName = ((ItemMasterSkill)MasterSkill[name]).ShortName;
+                if (ShortName == "Magic")
                     name = "Primary Magic";
-                    SortLR = 200;
-                    ShortName = "Magic";
-                    break;
-                case "Harness Ability":
-                    SortLR = 201;
-                    ShortName = "Harness";
-                    break;
-                case "Power Perceive":
-                    SortLR = 201;
-                    ShortName = "PP";
-                    break;
-                case "Arcana":
-                    SortLR = 203;
-                    ShortName = "Arcana";
-                    break;
-                case "Targeted Magic":
-                    SortLR = 204;
-                    ShortName = "TM";
-                    break;
-
-            //Survival Skills
-                case "Evasion":
-                    SortLR = 300;
-                    ShortName = "Evade";
-                    break;
-                case "Climbing":
-                    SortLR = 301;
-                    ShortName = "Climb";
-                    break;
-                case "Perception":
-                    SortLR = 302;
-                    ShortName = "Percep";
-                    break;
-                case "Scouting":
-                    SortLR = 303;
-                    ShortName = "Scout";
-                    break;
-                case "Hiding":
-                    SortLR = 304;
-                    ShortName = "Hide";
-                    break;
-                case "Lockpicking":
-                    SortLR = 305;
-                    ShortName = "Locks";
-                    break;
-                case "Disarm Traps":
-                    SortLR = 306;
-                    ShortName = "Disarm";
-                    break;
-                case "Stalking":
-                    SortLR = 307;
-                    ShortName = "Stalk";
-                    break;
-                case "Stealing":
-                    SortLR = 308;
-                    ShortName = "Steal";
-                    break;
-                case "First Aid":
-                    SortLR = 309;
-                    ShortName = "FA";
-                    break;
-                case "Foraging":
-                    SortLR = 310;
-                    ShortName = "Forage";
-                    break;
-                case "Escaping":
-                    SortLR = 311;
-                    ShortName = "Escape";
-                    break;
-                case "Backstab":
-                    SortLR = 312;
-                    ShortName = "BS";
-                    break;
-                case "Skinning":
-                    SortLR = 313;
-                    ShortName = "Skin";
-                    break;
-                case "Swimming":
-                    SortLR = 314;
-                    ShortName = "Swim";
-                    break;
-
-            //Lore Skills
-                case "Scholarship":
-                    SortLR = 400;
-                    ShortName = "Scholar";
-                    break;
-                case "Mechanical Lore":
-                    SortLR = 401;
-                    ShortName = "Mech";
-                    break;
-                case "Musical Theory":
-                    SortLR = 402;
-                    ShortName = "Music";
-                    break;
-                case "Appraisal":
-                    SortLR = 403;
-                    ShortName = "App";
-                    break;
-                case "Teaching":
-                    SortLR = 404;
-                    ShortName = "Teach";
-                    break;
-                case "Trading":
-                    SortLR = 405;
-                    ShortName = "Trade";
-                    break;
-                case "Animal Lore":
-                    SortLR = 406;
-                    ShortName = "Animal";
-                    break;
-                case "Percussions":
-                    SortLR = 407;
-                    ShortName = "Percuss";
-                    break;
-                case "Strings":
-                    SortLR = 408;
-                    ShortName = "Strings";
-                    break;
-                case "Winds":
-                    SortLR = 409;
-                    ShortName = "Winds";
-                    break;
-                case "Vocals":
-                    SortLR = 410;
-                    ShortName = "Vocals";
-                    break;
-                case "Astrology":
-                    SortLR = 411;
-                    ShortName = "Astro";
-                    break;
-                case "Empathy":
-                    SortLR = 412;
-                    ShortName = "Empathy";
-                    break;
-                case "Thanatology":
-                    SortLR = 413;
-                    ShortName = "Than";
-                    break;
-                
-                default:
-                    SortLR = 500;
-                    ShortName = "Err!";
-                    break;
+            }
+            else
+            {
+                SortLR = 500;
+                ShortName = "ERR!";
             }
 
             Skill skill;
@@ -997,19 +751,8 @@ namespace Standalone_EXPTracker
 
         private void ParseClear(string name)
         {
-            switch (name)
-            {
-                case "Lunar Magic":
-                case "Life Magic":
-                case "Holy Magic":
-                case "Elemental Magic":
-                case "Inner Magic":
-                case "Arcane Magic":
-                    name = "Primary Magic";
-                    break;
-                default:
-                    break;
-            }
+            if( name.EndsWith("Magic") && !name.StartsWith("Targeted") )
+                name = "Primary Magic";
 
             Skill skill = new Skill();
             if (_skillList.ContainsKey(name))
