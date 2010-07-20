@@ -8,7 +8,7 @@ namespace Standalone_EXPTracker
 {
     public class Class1 : IPlugin
     {
-        string _VERSION = "1.3.1";
+        string _VERSION = "1.3.2";
 
         #region IPlugin Members
         public IHost _host;                             //Required for plugin
