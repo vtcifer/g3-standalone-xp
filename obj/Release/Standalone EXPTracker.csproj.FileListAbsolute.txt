@@ -38,3 +38,27 @@ C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp
 C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone EXPTracker.csproj.GenerateResource.Cache
 C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone EXPTracker.dll
 C:\Documents and Settings\Derek\My Documents\Visual Studio 2008\g3-standalone-xp\obj\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\bin\Release\Standalone EXPTracker.dll
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\bin\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\bin\Release\Interfaces.dll
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\ResolveAssemblyReference.cache
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\Standalone_EXPTracker.Form1.resources
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource.read.1.tlog
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource.write.1.tlog
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\Standalone EXPTracker.dll
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\Standalone EXPTracker.pdb
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource-ResGen.read.1.tlog
+C:\Documents and Settings\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource-ResGen.write.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\bin\Release\Interfaces.dll
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\ResolveAssemblyReference.cache
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\Standalone_EXPTracker.Form1.resources
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource-ResGen.read.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource.read.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\ResGen.read.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource-ResGen.write.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\GenerateResource.write.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\ResGen.write.1.tlog
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\bin\Release\EXPTracker.dll
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\bin\Release\EXPTracker.pdb
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\EXPTracker.dll
+C:\Users\Derek\Desktop\My Dropbox\G3 Plugins\Exp Tracker - Hash\obj\Release\EXPTracker.pdb

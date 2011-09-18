@@ -4,15 +4,21 @@ using GeniePlugin.Interfaces;
 using System.Xml;
 using System.Text.RegularExpressions;
 
-namespace Standalone_EXPTracker
+namespace EXPTracker
 {
-    public class Class1 : IPlugin
+    public class EXPTracker : IPlugin
     {
-        string _VERSION = "1.4.0";
+        //Constant variable for the Properties of the plugin
+        //At the top for easy changes.
+        string _NAME = "EXPTracker";
+        string _VERSION = "2.0.0";
+        string _AUTHOR = "VTCifer";
+        string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
-        #region IPlugin Members
         public IHost _host;                             //Required for plugin
         public System.Windows.Forms.Form _parent;       //Required for plugin
+
+        #region EXPTracker Members
 
         private DateTime _startTime;                    //Used for TDP/Rank tracking to know how long tracking since
         private Hashtable _skillList = new Hashtable(); //Used for storing/sorting skills for display in Exp Win
@@ -20,24 +26,27 @@ namespace Standalone_EXPTracker
         private int _startTDP = 0;                      //Used for TDP tracking, this is set when first checking
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
-        private bool _sleeping = false;
+        private bool _sleeping = false;                 //Used for tracking if you are sleeping or not
         private string _mindState = "";                 //Used for converting mindstate parsed to an integer for GenieVariable
-        
+        private bool _report = false;                   //Used for ParseText, to know if you are running a report
+
+        private bool _enabled = true;                   //Used for "Pausing" the tracker, so no new data is input.  Also used to disable from
+                                                        //Plugins Window
+
         //The following hashtables are used as alternatives to switch statments using string data
-        //which can have rather bad run time
+        //which can have rather bad run time.  
+        //****************************//
+        // This is still experimental //
+        //****************************//
         private Hashtable MasterSkill;
         private class ItemMasterSkill
         {
             public int SortLR;
             public string ShortName;
         }
-        
+
         private Hashtable MasterMindState;
         private Hashtable MasterLearnRate;
-
-
-        // enabled appears unused at the moment
-        private bool _enabled = true;
 
         //Class Skill
         //Used for storing all skill related info
@@ -52,6 +61,7 @@ namespace Standalone_EXPTracker
             public bool learned = false;            //Used for displaying text in a specific color when bits are added to pool
             public int sortLR = 0;                  //Used for sorting As reading, Left to Right
             public string shortname = "";           //Used for short name display instead of long name
+            public string output = "";
         }
 
         //Class Sortskill
@@ -65,6 +75,66 @@ namespace Standalone_EXPTracker
             public int sortLearning = 0;    //Ordered value based on top to bottom, THEN left to right 
         }
         #endregion
+
+        #region IPlugin Properties
+
+        //Required for Plugin - Called when Genie needs the name of the plugin (On menu)
+        //Return Value:
+        //              string: Text that is the name of the Plugin
+        public string Name
+        {
+            get { return _NAME; }
+        }
+
+        //Required for Plugin - Called when Genie needs the plugin version (error text
+        //                      or the plugins window)
+        //Return Value:
+        //              string: Text that is the version of the plugin
+        public string Version
+        {
+            get { return _VERSION; }
+        }
+
+        //Required for Plugin - Called when Genie needs the plugin Author (plugins window)
+        //Return Value:
+        //              string: Text that is the Author of the plugin
+        public string Author
+        {
+            get { return _AUTHOR; }
+        }
+
+        //Required for Plugin - Called when Genie needs the plugin Description (plugins window)
+        //Return Value:
+        //              string: Text that is the description of the plugin
+        //                      This can only be up to 200 Characters long, else it will appear
+        //                      "truncated"
+        public string Description
+        {
+            get { return _DESCRIPTION; }
+        }
+
+        //Required for Plugin - Called when Genie needs disable/enable the plugin (Plugins window,
+        //                      and from the CLI), or when Genie needs to know the status of the 
+        //                      plugin (???)
+        //Get:
+        //      Not Known what it is used for
+        //Set:
+        //      Used by Plugins Window + CLI
+        public bool Enabled
+        {
+            get
+            {
+                return _enabled;
+            }
+            set
+            {
+                _enabled = value;
+            }
+
+        }
+
+        #endregion
+
         #region IPlugin Methods
 
         //Required for Plugin - Called on first load
@@ -88,119 +158,122 @@ namespace Standalone_EXPTracker
             //Set Genie Variables if not already set
 
             if (_host.get_Variable("ExpTracker.Window") == "")
-                _host.set_Variable("ExpTracker.Window", "0");
+                _host.SendText("#var ExpTracker.Window 0");
 
             if (_host.get_Variable("ExpTracker.ShowRankGain") == "")
-                _host.set_Variable("ExpTracker.ShowRankGain", "1");
+                _host.SendText("#var ExpTracker.ShowRankGain 1");
 
             if (_host.get_Variable("ExpTracker.LearningRate") == "")
-                _host.set_Variable("ExpTracker.LearningRate", "1");
+                _host.SendText("#var ExpTracker.LearningRate 1");
 
             if (_host.get_Variable("ExpTracker.LearningRateNumber") == "")
-                _host.set_Variable("ExpTracker.LearningRateNumber", "0");
+                _host.SendText("#var ExpTracker.LearningRateNumber 0");
 
             if (_host.get_Variable("ExpTracker.TrackSleep") == "")
-                _host.set_Variable("ExpTracker.TrackSleep", "0");
+                _host.SendText("#var ExpTracker.TrackSleep 0");
 
             if (_host.get_Variable("ExpTracker.EchoSleep") == "")
-                _host.set_Variable("ExpTracker.EchoSleep", "0");
-            
+                _host.SendText("#var ExpTracker.EchoSleep 0");
+
             if (_host.get_Variable("ExpTracker.SortType") == "")
-                _host.set_Variable("ExpTracker.SortType", "0");
+                _host.SendText("#var ExpTracker.SortType 0");
 
             if (_host.get_Variable("ExpTracker.GagExp") == "")
-                _host.set_Variable("ExpTracker.GagExp", "0");
+                _host.SendText("#var ExpTracker.GagExp 0");
 
             if (_host.get_Variable("ExpTracker.Color.Normal") == "")
-                _host.set_Variable("ExpTracker.Color.Normal", "WhiteSmoke");
+                _host.SendText("#var ExpTracker.Color.Normal WhiteSmoke");
 
             if (_host.get_Variable("ExpTracker.Color.RankGained") == "")
-                _host.set_Variable("ExpTracker.Color.RankGained", "WhiteSmoke");
+                _host.SendText("#var ExpTracker.Color.RankGained WhiteSmoke");
 
             if (_host.get_Variable("ExpTracker.Color.Learned") == "")
-                _host.set_Variable("ExpTracker.Color.Learned", "WhiteSmoke");
+                _host.SendText("#var ExpTracker.Color.Learned WhiteSmoke");
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "")
-                _host.set_Variable("ExpTracker.ShortNames", "0");
+                _host.SendText("#var ExpTracker.ShortNames 0");
 
             //create AND popluate the master hashtables
+            //This in theory should front load processing time for when Genie loads
+            //and speed up the time it takes to parse, and generate EXP window data.
             MasterSkill = new Hashtable(72);
-    //Armor skills
-            MasterSkill.Add("Shield Usage", new ItemMasterSkill {SortLR = 0, ShortName = "Shield"});
-            MasterSkill.Add("Leather Armor", new ItemMasterSkill {SortLR = 1, ShortName = "Leather"});
-            MasterSkill.Add("Light Chain", new ItemMasterSkill {SortLR = 2, ShortName = "LC"});
-            MasterSkill.Add("Heavy Chain", new ItemMasterSkill {SortLR = 3, ShortName = "HC"});
-            MasterSkill.Add("Light Plate", new ItemMasterSkill {SortLR = 4, ShortName = "LP"});
-            MasterSkill.Add("Heavy Plate", new ItemMasterSkill {SortLR = 5, ShortName = "HP"});
-            MasterSkill.Add("Cloth Armor", new ItemMasterSkill {SortLR = 6, ShortName = "Cloth"});
-            MasterSkill.Add("Bone Armor", new ItemMasterSkill {SortLR = 7, ShortName = "Bone" });
-    //Weapon Skills            
-            MasterSkill.Add("Parry Ability", new ItemMasterSkill {SortLR = 100, ShortName = "Parry"});
-            MasterSkill.Add("Multi Opponent", new ItemMasterSkill {SortLR = 101, ShortName = "MO"});
-            MasterSkill.Add("Light Edged", new ItemMasterSkill {SortLR = 102, ShortName = "LE"});
-            MasterSkill.Add("Medium Edged", new ItemMasterSkill {SortLR = 103, ShortName = "ME"});
-            MasterSkill.Add("Heavy Edged", new ItemMasterSkill {SortLR = 104, ShortName = "HE"});
-            MasterSkill.Add("Twohanded Edged", new ItemMasterSkill {SortLR = 105, ShortName = "2HE"});
-            MasterSkill.Add("Light Blunt", new ItemMasterSkill {SortLR = 106, ShortName = "LB"});
-            MasterSkill.Add("Medium Blunt", new ItemMasterSkill {SortLR = 107, ShortName = "MB"});
-            MasterSkill.Add("Heavy Blunt", new ItemMasterSkill {SortLR = 108, ShortName = "HB"});
-            MasterSkill.Add("Twohanded Blunt", new ItemMasterSkill {SortLR = 109, ShortName = "2HB"});
-            MasterSkill.Add("Slings", new ItemMasterSkill {SortLR = 110, ShortName = "Sling"});
-            MasterSkill.Add("Staff Sling", new ItemMasterSkill {SortLR = 111, ShortName = "S Sling"});
-            MasterSkill.Add("Short Bow", new ItemMasterSkill {SortLR = 112, ShortName = "S Bow"});
-            MasterSkill.Add("Long Bow", new ItemMasterSkill {SortLR = 113, ShortName = "L Bow"});
-            MasterSkill.Add("Composite Bow", new ItemMasterSkill {SortLR = 114, ShortName = "C Bow"});
-            MasterSkill.Add("Light Crossbow", new ItemMasterSkill {SortLR = 115, ShortName = "LX"});
-            MasterSkill.Add("Heavy Crossbow", new ItemMasterSkill {SortLR = 116, ShortName = "HX"});
-            MasterSkill.Add("Short Staff", new ItemMasterSkill {SortLR = 117, ShortName = "S Staff"});
-            MasterSkill.Add("Quarter Staff", new ItemMasterSkill {SortLR = 118, ShortName = "Q Staff"});
-            MasterSkill.Add("Pikes", new ItemMasterSkill {SortLR = 119, ShortName = "Pike"});
-            MasterSkill.Add("Halberds", new ItemMasterSkill {SortLR = 120, ShortName = "Halberd"});
-            MasterSkill.Add("Light Thrown", new ItemMasterSkill {SortLR = 121, ShortName = "LT"});
-            MasterSkill.Add("Heavy Thrown", new ItemMasterSkill {SortLR = 122, ShortName = "HT"});
-            MasterSkill.Add("Brawling", new ItemMasterSkill {SortLR = 123, ShortName = "Brawl"});
-            MasterSkill.Add("Offhand Weapon", new ItemMasterSkill { SortLR = 124, ShortName = "Offhand"});
-    //Magic Skills
-            MasterSkill.Add("Lunar Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
-            MasterSkill.Add("Holy Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
-            MasterSkill.Add("Elemental Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
-            MasterSkill.Add("Inner Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
-            MasterSkill.Add("Arcane Magic", new ItemMasterSkill {SortLR = 200, ShortName = "Magic"});
-            MasterSkill.Add("Harness Ability", new ItemMasterSkill {SortLR = 201, ShortName = "Harness"});
-            MasterSkill.Add("Power Perceive", new ItemMasterSkill {SortLR = 202, ShortName = "PP"});
-            MasterSkill.Add("Arcana", new ItemMasterSkill {SortLR = 203, ShortName = "Arcana"});
-            MasterSkill.Add("Targeted Magic", new ItemMasterSkill {SortLR = 204, ShortName = "TM"});
-    //Survival Skills
-            MasterSkill.Add("Evasion", new ItemMasterSkill {SortLR = 300, ShortName = "Evade"});
-            MasterSkill.Add("Climbing", new ItemMasterSkill {SortLR = 301, ShortName = "Climb"});
-            MasterSkill.Add("Perception", new ItemMasterSkill {SortLR = 302, ShortName = "Percep"});
-            MasterSkill.Add("Scouting", new ItemMasterSkill {SortLR = 303, ShortName = "Scout"});
-            MasterSkill.Add("Hiding", new ItemMasterSkill {SortLR = 304, ShortName = "Hide"});
-            MasterSkill.Add("Lockpicking", new ItemMasterSkill {SortLR = 305, ShortName = "Locks"});
-            MasterSkill.Add("Disarm Traps", new ItemMasterSkill {SortLR = 306, ShortName = "Disarm"});
-            MasterSkill.Add("Stalking", new ItemMasterSkill {SortLR = 307, ShortName = "Stalk"});
-            MasterSkill.Add("Stealing", new ItemMasterSkill {SortLR = 308, ShortName = "Steal"});
-            MasterSkill.Add("First Aid", new ItemMasterSkill {SortLR = 309, ShortName = "FA"});
-            MasterSkill.Add("Foraging", new ItemMasterSkill {SortLR = 310, ShortName = "Forage"});
-            MasterSkill.Add("Escaping", new ItemMasterSkill {SortLR = 311, ShortName = "Escape"});
-            MasterSkill.Add("Backstab", new ItemMasterSkill {SortLR = 312, ShortName = "BS"});
-            MasterSkill.Add("Skinning", new ItemMasterSkill {SortLR = 313, ShortName = "Skin"});
-            MasterSkill.Add("Swimming", new ItemMasterSkill {SortLR = 314, ShortName = "Swim"});
-    //Lore Skills
-            MasterSkill.Add("Scholarship", new ItemMasterSkill {SortLR = 400, ShortName = "Scholar"});
-            MasterSkill.Add("Mechanical Lore", new ItemMasterSkill {SortLR = 401, ShortName = "Mech"});
-            MasterSkill.Add("Musical Theory", new ItemMasterSkill {SortLR = 402, ShortName = "Music"});
-            MasterSkill.Add("Appraisal", new ItemMasterSkill {SortLR = 403, ShortName = "App"});
-            MasterSkill.Add("Teaching", new ItemMasterSkill {SortLR = 404, ShortName = "Teach"});
-            MasterSkill.Add("Trading", new ItemMasterSkill {SortLR = 405, ShortName = "Trade"});
-            MasterSkill.Add("Animal Lore", new ItemMasterSkill {SortLR = 406, ShortName = "Animal"});
-            MasterSkill.Add("Percussions", new ItemMasterSkill {SortLR = 407, ShortName = "Percuss"});
-            MasterSkill.Add("Strings", new ItemMasterSkill {SortLR = 408, ShortName = "Strings"});
-            MasterSkill.Add("Winds", new ItemMasterSkill {SortLR = 409, ShortName = "Winds"});
-            MasterSkill.Add("Vocals", new ItemMasterSkill {SortLR = 410, ShortName = "Vocals"});
-            MasterSkill.Add("Astrology", new ItemMasterSkill {SortLR = 411, ShortName = "Astro"});
-            MasterSkill.Add("Empathy", new ItemMasterSkill {SortLR = 412, ShortName = "Empathy"});
-            MasterSkill.Add("Thanatology", new ItemMasterSkill {SortLR = 413, ShortName = "Than"});
+            //Armor skills
+            MasterSkill.Add("Shield Usage", new ItemMasterSkill { SortLR = 0, ShortName = "Shield" });
+            MasterSkill.Add("Leather Armor", new ItemMasterSkill { SortLR = 1, ShortName = "Leather" });
+            MasterSkill.Add("Light Chain", new ItemMasterSkill { SortLR = 2, ShortName = "LC" });
+            MasterSkill.Add("Heavy Chain", new ItemMasterSkill { SortLR = 3, ShortName = "HC" });
+            MasterSkill.Add("Light Plate", new ItemMasterSkill { SortLR = 4, ShortName = "LP" });
+            MasterSkill.Add("Heavy Plate", new ItemMasterSkill { SortLR = 5, ShortName = "HP" });
+            MasterSkill.Add("Cloth Armor", new ItemMasterSkill { SortLR = 6, ShortName = "Cloth" });
+            MasterSkill.Add("Bone Armor", new ItemMasterSkill { SortLR = 7, ShortName = "Bone" });
+            //Weapon Skills            
+            MasterSkill.Add("Parry Ability", new ItemMasterSkill { SortLR = 100, ShortName = "Parry" });
+            MasterSkill.Add("Multi Opponent", new ItemMasterSkill { SortLR = 101, ShortName = "MO" });
+            MasterSkill.Add("Light Edged", new ItemMasterSkill { SortLR = 102, ShortName = "LE" });
+            MasterSkill.Add("Medium Edged", new ItemMasterSkill { SortLR = 103, ShortName = "ME" });
+            MasterSkill.Add("Heavy Edged", new ItemMasterSkill { SortLR = 104, ShortName = "HE" });
+            MasterSkill.Add("Twohanded Edged", new ItemMasterSkill { SortLR = 105, ShortName = "2HE" });
+            MasterSkill.Add("Light Blunt", new ItemMasterSkill { SortLR = 106, ShortName = "LB" });
+            MasterSkill.Add("Medium Blunt", new ItemMasterSkill { SortLR = 107, ShortName = "MB" });
+            MasterSkill.Add("Heavy Blunt", new ItemMasterSkill { SortLR = 108, ShortName = "HB" });
+            MasterSkill.Add("Twohanded Blunt", new ItemMasterSkill { SortLR = 109, ShortName = "2HB" });
+            MasterSkill.Add("Slings", new ItemMasterSkill { SortLR = 110, ShortName = "Sling" });
+            MasterSkill.Add("Staff Sling", new ItemMasterSkill { SortLR = 111, ShortName = "S Sling" });
+            MasterSkill.Add("Short Bow", new ItemMasterSkill { SortLR = 112, ShortName = "S Bow" });
+            MasterSkill.Add("Long Bow", new ItemMasterSkill { SortLR = 113, ShortName = "L Bow" });
+            MasterSkill.Add("Composite Bow", new ItemMasterSkill { SortLR = 114, ShortName = "C Bow" });
+            MasterSkill.Add("Light Crossbow", new ItemMasterSkill { SortLR = 115, ShortName = "LX" });
+            MasterSkill.Add("Heavy Crossbow", new ItemMasterSkill { SortLR = 116, ShortName = "HX" });
+            MasterSkill.Add("Short Staff", new ItemMasterSkill { SortLR = 117, ShortName = "S Staff" });
+            MasterSkill.Add("Quarter Staff", new ItemMasterSkill { SortLR = 118, ShortName = "Q Staff" });
+            MasterSkill.Add("Pikes", new ItemMasterSkill { SortLR = 119, ShortName = "Pike" });
+            MasterSkill.Add("Halberds", new ItemMasterSkill { SortLR = 120, ShortName = "Halberd" });
+            MasterSkill.Add("Light Thrown", new ItemMasterSkill { SortLR = 121, ShortName = "LT" });
+            MasterSkill.Add("Heavy Thrown", new ItemMasterSkill { SortLR = 122, ShortName = "HT" });
+            MasterSkill.Add("Brawling", new ItemMasterSkill { SortLR = 123, ShortName = "Brawl" });
+            MasterSkill.Add("Offhand Weapon", new ItemMasterSkill { SortLR = 124, ShortName = "Offhand" });
+            //Magic Skills
+            MasterSkill.Add("Lunar Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Life Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Holy Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Elemental Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Inner Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Arcane Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Harness Ability", new ItemMasterSkill { SortLR = 201, ShortName = "Harness" });
+            MasterSkill.Add("Power Perceive", new ItemMasterSkill { SortLR = 202, ShortName = "PP" });
+            MasterSkill.Add("Arcana", new ItemMasterSkill { SortLR = 203, ShortName = "Arcana" });
+            MasterSkill.Add("Targeted Magic", new ItemMasterSkill { SortLR = 204, ShortName = "TM" });
+            //Survival Skills
+            MasterSkill.Add("Evasion", new ItemMasterSkill { SortLR = 300, ShortName = "Evade" });
+            MasterSkill.Add("Climbing", new ItemMasterSkill { SortLR = 301, ShortName = "Climb" });
+            MasterSkill.Add("Perception", new ItemMasterSkill { SortLR = 302, ShortName = "Percep" });
+            MasterSkill.Add("Scouting", new ItemMasterSkill { SortLR = 303, ShortName = "Scout" });
+            MasterSkill.Add("Hiding", new ItemMasterSkill { SortLR = 304, ShortName = "Hide" });
+            MasterSkill.Add("Lockpicking", new ItemMasterSkill { SortLR = 305, ShortName = "Locks" });
+            MasterSkill.Add("Disarm Traps", new ItemMasterSkill { SortLR = 306, ShortName = "Disarm" });
+            MasterSkill.Add("Stalking", new ItemMasterSkill { SortLR = 307, ShortName = "Stalk" });
+            MasterSkill.Add("Stealing", new ItemMasterSkill { SortLR = 308, ShortName = "Steal" });
+            MasterSkill.Add("First Aid", new ItemMasterSkill { SortLR = 309, ShortName = "FA" });
+            MasterSkill.Add("Foraging", new ItemMasterSkill { SortLR = 310, ShortName = "Forage" });
+            MasterSkill.Add("Escaping", new ItemMasterSkill { SortLR = 311, ShortName = "Escape" });
+            MasterSkill.Add("Backstab", new ItemMasterSkill { SortLR = 312, ShortName = "BS" });
+            MasterSkill.Add("Skinning", new ItemMasterSkill { SortLR = 313, ShortName = "Skin" });
+            MasterSkill.Add("Swimming", new ItemMasterSkill { SortLR = 314, ShortName = "Swim" });
+            //Lore Skills
+            MasterSkill.Add("Scholarship", new ItemMasterSkill { SortLR = 400, ShortName = "Scholar" });
+            MasterSkill.Add("Mechanical Lore", new ItemMasterSkill { SortLR = 401, ShortName = "Mech" });
+            MasterSkill.Add("Musical Theory", new ItemMasterSkill { SortLR = 402, ShortName = "Music" });
+            MasterSkill.Add("Appraisal", new ItemMasterSkill { SortLR = 403, ShortName = "App" });
+            MasterSkill.Add("Teaching", new ItemMasterSkill { SortLR = 404, ShortName = "Teach" });
+            MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 405, ShortName = "Trade" });
+            MasterSkill.Add("Animal Lore", new ItemMasterSkill { SortLR = 406, ShortName = "Animal" });
+            MasterSkill.Add("Percussions", new ItemMasterSkill { SortLR = 407, ShortName = "Percuss" });
+            MasterSkill.Add("Strings", new ItemMasterSkill { SortLR = 408, ShortName = "Strings" });
+            MasterSkill.Add("Winds", new ItemMasterSkill { SortLR = 409, ShortName = "Winds" });
+            MasterSkill.Add("Vocals", new ItemMasterSkill { SortLR = 410, ShortName = "Vocals" });
+            MasterSkill.Add("Astrology", new ItemMasterSkill { SortLR = 411, ShortName = "Astro" });
+            MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 412, ShortName = "Empathy" });
+            MasterSkill.Add("Thanatology", new ItemMasterSkill { SortLR = 413, ShortName = "Than" });
 
 
             MasterMindState = new Hashtable(12);
@@ -220,13 +293,13 @@ namespace Standalone_EXPTracker
             MasterLearnRate = new Hashtable(35);
             MasterLearnRate.Add("clear", 0);
             MasterLearnRate.Add("dabbling", 1);
-            MasterLearnRate.Add("perusing",  2);
-            MasterLearnRate.Add("learning",  3);
-            MasterLearnRate.Add("thoughtful",  4);
-            MasterLearnRate.Add("thinking",  5);
-            MasterLearnRate.Add("considering",  6);
-            MasterLearnRate.Add("pondering",  7);
-            MasterLearnRate.Add("ruminating",  8);
+            MasterLearnRate.Add("perusing", 2);
+            MasterLearnRate.Add("learning", 3);
+            MasterLearnRate.Add("thoughtful", 4);
+            MasterLearnRate.Add("thinking", 5);
+            MasterLearnRate.Add("considering", 6);
+            MasterLearnRate.Add("pondering", 7);
+            MasterLearnRate.Add("ruminating", 8);
             MasterLearnRate.Add("concentrating", 9);
             MasterLearnRate.Add("attentive", 10);
             MasterLearnRate.Add("deliberative", 11);
@@ -255,14 +328,6 @@ namespace Standalone_EXPTracker
             MasterLearnRate.Add("mind lock", 34);
         }
 
-        //Required for Plugin - Called when Genie needs the name of the plugin (On menu)
-        //Return Value:
-        //              string: Text that is the name of the Plugin
-        public string Name
-        {
-            get { return "Standalone EXPTracker"; }
-        }
-
         //Required for Plugin - Called when user enters text in the command box
         //Parameters:
         //              string Text:  The text the user entered in the command box
@@ -270,10 +335,10 @@ namespace Standalone_EXPTracker
         //              string: Text that will be sent to the game
         public string ParseInput(string Text)
         {
-            if (Text.StartsWith("/track"))
+            if (Text.StartsWith("/track ") || Text.StartsWith("/trackr") || Text.Equals("/track"))
             {
                 //Reset all tracking, to current value for skills/TDPS
-                if (Text == "/trackreset" || Text == "/track reset") 
+                if (Text == "/trackreset" || Text == "/track reset")
                 {
                     //Reset TDP tracking
                     _TDP = 0;
@@ -318,6 +383,15 @@ namespace Standalone_EXPTracker
                     _host.SendText("#echo XP Tracker reset to intial values");
                     return "";
                 }
+                else if (Text == "/track tdp reset")
+                {
+                    _TDP = 0;
+                    _startTDP = 0;
+
+                    _host.SendText("#echo");
+                    _host.SendText("#echo TDP tracking reset");
+                    return "";
+                }
                 //Pauses XP Tracker until /trackresume is seen
                 else if (Text == "/track pause")
                 {
@@ -331,13 +405,18 @@ namespace Standalone_EXPTracker
                 //Resumes XP Tracker
                 else if (Text == "/track resume")
                 {
-                    
                     _enabled = true;
                     _host.SendText("#echo");
                     _host.SendText("#echo XP Tracker resumed.");
 
                     return "";
                 }
+                else if (Text == "/track report")
+                {
+                    _report = true;
+                    return "exp all";
+                }
+
                 //User asking for help with commands, or invalid command entered
                 else
                 {
@@ -345,12 +424,17 @@ namespace Standalone_EXPTracker
                     _host.SendText(@"#echo Standlone EXPTracker (Ver:" + _VERSION + ") Usage:");
                     _host.SendText(@"#echo /track reset");
                     _host.SendText(@"#echo """"    """" Used to reset tracking");
+                    _host.SendText(@"#echo /track tdp reset");
+                    _host.SendText(@"#echo """"    """" Used to reset tdp tracking only");
                     _host.SendText(@"#echo /track clear");
                     _host.SendText(@"#echo """"    """" Used to reset as if you just started Genie");
                     _host.SendText(@"#echo /track pause");
                     _host.SendText(@"#echo """"    """" Used to pause Exp Tracker from tracking ANY Exp Changes");
-                    _host.SendText(@"#echo /track clear");
+                    _host.SendText(@"#echo /track resume");
                     _host.SendText(@"#echo """"    """" Used to resume Exp Tracker");
+                    _host.SendText(@"#echo /track report");
+                    _host.SendText(@"#echo """"    """" Produce a report ");
+
                     return "";
                 }
             }
@@ -360,20 +444,27 @@ namespace Standalone_EXPTracker
 
         //Required for Plugin - 
         //Parameters:
-        //              string Text:  That DIRECT text comes from the game (non-"xml")
+        //              string Text:    The DIRECT text comes from the game (non-"xml")
+        //              string Window:  The Window the Text was received from
         //Return Value:
         //              string: Text that will be sent to the main window
-        public string ParseText(string Text)
+        public string ParseText(string Text, string Window)
         {
             //check to see if tracker is paused or not.  If paused, just return the text back to Genie
             if (_enabled == false)
-                 return Text;
-            
-            //Try/Catch used incase exception thrown, keeps plugin from being unloaded.
+                return Text;
+
+            //Try/Catch used incase exception thrown, keeps plugin from being unloaded on bad data.
             try
             {
                 if (_host != null)
                 {
+                    //Report has been finished generated (String is last line of exp output)
+                    if (_report == true && Text.StartsWith("EXP HELP for more information"))
+                    {
+                        _report = false;
+                        DisplayReport();
+                    }
                     if (_parsing == true)
                     {
                         //Parsing of Plain text EXP is done at this point.
@@ -384,12 +475,12 @@ namespace Standalone_EXPTracker
                             //since it forces a variable save
                             if (_sleeping == true && _host.get_Variable("TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "1")
                             {
-                                _host.set_Variable("ExpTracker.Sleeping", "1");
+                                _host.SendText("#var ExpTracker.Sleeping 1");
                                 _host.SendText("#var save");
                             }
                             else if (_sleeping == false && _host.get_Variable("TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0")
                             {
-                                _host.set_Variable("ExpTracker.Sleeping", "0");
+                                _host.SendText("#var ExpTracker.Sleeping 0");
                                 _host.SendText("#var save");
                             }
                             //once parsing is done, update the Experience Window
@@ -419,7 +510,7 @@ namespace Standalone_EXPTracker
                                 _startTDP = _TDP;
                         }
                         //string for sleeping
-                        else if (Text.StartsWith("You are relaxed and your mind has entered a state of rest.") )
+                        else if (Text.StartsWith("You are relaxed and your mind has entered a state of rest."))
                             _sleeping = true;
                     }
                     //Signals the start of the Experience command response
@@ -429,17 +520,17 @@ namespace Standalone_EXPTracker
                         //Assume not sleeping, since there is no string when you're not.
                         _sleeping = false;
                     }
-                    
+
                     //Following two the response strings for when you sleeping/awake
-                    if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "0" && (Text.StartsWith("You relax and allow your mind to enter a state of rest.") || Text.StartsWith("You are already resting your mind!")) )
+                    if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "0" && (Text.StartsWith("You relax and allow your mind to enter a state of rest.") || Text.StartsWith("You are already resting your mind!")))
                     {
-                        _host.set_Variable("ExpTracker.Sleeping", "1");
+                        _host.SendText("#var ExpTracker.Sleeping 1");
                         _host.SendText("#var save");
                         _updateExp = true;
                     }
-                    else if ( _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1" && (Text.StartsWith("You awaken from your reverie and begin to take in") || Text.StartsWith("But you are not sleeping!")) )
+                    else if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1" && (Text.StartsWith("You awaken from your reverie and begin to take in") || Text.StartsWith("But you are not sleeping!")))
                     {
-                        _host.set_Variable("ExpTracker.Sleeping", "0");
+                        _host.SendText("#var ExpTracker.Sleeping 0");
                         _host.SendText("#var save");
                         _updateExp = true;
                     }
@@ -463,12 +554,15 @@ namespace Standalone_EXPTracker
         //              string Text:  That "xml" text comes from the game
         public void ParseXML(string XML)
         {
+            //check to see if tracker is paused or not.  If paused, just return the text back to Genie
             if (_enabled == false)
-                 return;
-
+                return;
+            
+            //trigger update checks with XML prompt
             if (XML.Contains("prompt"))
             {
-
+                //However, only ouptut the update, if there is an update
+                //for the exp window.
                 if (_updateExp == true)
                 {
                     ShowExperience();
@@ -476,7 +570,16 @@ namespace Standalone_EXPTracker
                 }
             }
 
-            if (XML.Contains("component") && XML.Contains("exp "))
+            //XML data for Learning skills
+            //<component id='exp Light Chain'><preset id='whisper'>     Light Chain:  282 22% mind lock    </preset></component>
+            //XML data for pulsed skills
+            //<component id='exp Hiding'>          Hiding:  398 33% rapt         </component>
+            //XML Data for plused to clear skills
+            //<component id='exp Climbing'></component>
+
+            //if (XML.Contains("component") && XML.Contains("exp "))
+            //Trying out possibly better String function
+            if(XML.StartsWith("<component id='exp "))
             {
                 XmlDocument doc = new XmlDocument();
 
@@ -490,7 +593,6 @@ namespace Standalone_EXPTracker
                     switch (xn.Name)
                     {
                         case "component":
-                            _updateExp = true;
                             if (XML.Contains("whisper") || XML.Contains("<b>"))
                             {
                                 XmlNode xn2 = xn.ChildNodes.Item(0);
@@ -525,43 +627,42 @@ namespace Standalone_EXPTracker
             }
         }
 
-        //Required for Plugin - Opens the settings window for the plugin
+        //Required for Plugin - This method is called when clicking on the plugin 
+        //name from the Menu item Plugins
         public void Show()
         {
             OpenSettingsWindow(_host.ParentForm);
         }
 
+        //Required for Plugin - This method is called when a global variable in genie
+        //                      is changed
+        //Parameters:
+        //              string Text:  The variable name in Genie that changed
         public void VariableChanged(string Variable)
         {
 
-        }
-
-        public string Version
-        {
-            get { return _VERSION; }
         }
 
         public void ParentClosing()
         {
         }
 
-        public bool Enabled
-        {
-            get
-            {
-                return _enabled;
-            }
-            set
-            {
-                _enabled = value;
-            }
 
-        }
+        #endregion
 
+        #region Custom Parse/Display methods
+
+        //Opens the settings window.  Called when a user clicks on the menu item for 
+        //this plugin (via above call)
+        //
+        //Parameters:
+        //              Form Parent:  The parent form of the plugin.  Genie in this case
         public void OpenSettingsWindow(System.Windows.Forms.Form parent)
         {
-            Form1 form = new Form1(ref _host);
+            frmEXPTracker form = new frmEXPTracker(ref _host);
 
+            //All the following code reads the ExpTracker Global variables
+            //and sets the form to reflect the current setup.
             form.txtNormal.Text = _host.get_Variable("ExpTracker.Color.Normal");
             form.txtRankGained.Text = _host.get_Variable("ExpTracker.Color.RankGained");
             form.txtLearned.Text = _host.get_Variable("ExpTracker.Color.Learned");
@@ -584,7 +685,7 @@ namespace Standalone_EXPTracker
                 form.comboSort.Text = "Learning Rate Reverse";
             else
                 form.comboSort.Text = "A to Z";
-            
+
             form.txtEcho.Text = _host.get_Variable("ExpTracker.Echo");
 
             if (_host.get_Variable("ExpTracker.EchoSleep") == "1")
@@ -623,22 +724,23 @@ namespace Standalone_EXPTracker
             form.Show();
         }
 
-        #endregion
-
-        #region Custom Parse/Display methods
+        //Parses Mindstate into 
+        //
+        //Parameters:
+        //              string text:  the p
         private void ParseMindState(string text)
         {
             int mindState = 0;
             _mindState = text;
-            if ( MasterMindState.Contains(_mindState) )
-                mindState = (int) MasterMindState[_mindState];
-            
+            if (MasterMindState.Contains(_mindState))
+                mindState = (int)MasterMindState[_mindState];
+
             _host.set_Variable("MindState", mindState.ToString());
         }
 
         private int GetLearningRateInt(string skillRate)
         {
-            if ( MasterLearnRate.Contains(skillRate) )
+            if (MasterLearnRate.Contains(skillRate))
                 return (int)MasterLearnRate[skillRate];
             else
                 return -1;
@@ -711,6 +813,9 @@ namespace Standalone_EXPTracker
             if (_skillList.ContainsKey(name))
             {
                 skill = (Skill)_skillList[name];
+                if ((learningRate != skill.learningRate) || (dRank != skill.rank) || (skill.learned == false && type == 1))
+                    _updateExp = true;
+
                 skill.learningRate = learningRate;
                 skill.iLearningRate = GetLearningRateInt(learningRate);
                 skill.rank = dRank;
@@ -724,10 +829,45 @@ namespace Standalone_EXPTracker
                     skill.rankGained = true;
                 skill.sortLR = SortLR;
                 skill.shortname = ShortName;
+
+                //Next section builds the output string.  This will need to be recalucated for all skills if the 
+                //output options are ever changed.
+
+                //Outputs name of skill (short or normal) & ranks
+                if (_host.get_Variable("ExpTracker.ShortNames") == "1")
+                    skill.output = String.Format("{0,7:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                else
+                    skill.output = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                //Outputs Learning Rate NAME if set to
+                if (_host.get_Variable("ExpTracker.LearningRate") == "1")
+                    skill.output += String.Format(" {0,-13}", skill.learningRate);
+                //Outputs Learning Rate NUMBER if set to
+                if (_host.get_Variable("ExpTracker.LearningRateNumber") == "1")
+                    skill.output += String.Format("{0,8}", "(" + skill.iLearningRate + "/34)");
+                //Outputs Skill gain if set to 
+                if (_host.get_Variable("ExpTracker.ShowRankGain") == "1")
+                {
+                    //Calculate Skill gain
+                    double rankGain = skill.rank - skill.startRank;
+                    skill.output += " +" + String.Format("{0:0.00}", rankGain);
+                }
+                //Used for #echo >Window Options "   Text "
+                //to preserve white space
+                skill.output = " \"" + skill.output + "\"";
+
+                //set color of text if ranked, or learned, or normal
+                if (skill.rankGained == true)
+                    skill.output = _host.get_Variable("ExpTracker.Color.RankGained") + skill.output;
+                else if (skill.learned == true)
+                    skill.output = _host.get_Variable("ExpTracker.Color.Learned") + skill.output;
+                else
+                    skill.output = _host.get_Variable("ExpTracker.Color.Normal") + skill.output;
+
                 _skillList[name] = skill;
             }
             else
             {
+                _updateExp = true;
                 skill = new Skill
                 {
                     learningRate = learningRate,
@@ -741,6 +881,39 @@ namespace Standalone_EXPTracker
                     skill.learned = true;
                 if (type == 2)
                     skill.rankGained = true;
+                //Next section builds the output string.  This will need to be recalucated for all skills if the 
+                //output options are ever changed.
+
+                //Outputs name of skill (short or normal) & ranks
+                if (_host.get_Variable("ExpTracker.ShortNames") == "1")
+                    skill.output = String.Format("{0,7:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                else
+                    skill.output = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                //Outputs Learning Rate NAME if set to
+                if (_host.get_Variable("ExpTracker.LearningRate") == "1")
+                    skill.output += String.Format(" {0,-13}", skill.learningRate);
+                //Outputs Learning Rate NUMBER if set to
+                if (_host.get_Variable("ExpTracker.LearningRateNumber") == "1")
+                    skill.output += String.Format("{0,8}", "(" + skill.iLearningRate + "/34)");
+                //Outputs Skill gain if set to 
+                if (_host.get_Variable("ExpTracker.ShowRankGain") == "1")
+                {
+                    //Calculate Skill gain
+                    double rankGain = skill.rank - skill.startRank;
+                    skill.output += " +" + String.Format("{0:0.00}", rankGain);
+                }
+                //Used for #echo >Window Options "   Text "
+                //to preserve white space
+                skill.output = " \"" + skill.output + "\"";
+
+                //set color of text if ranked, or learned, or normal
+                if (skill.rankGained == true)
+                    skill.output = _host.get_Variable("ExpTracker.Color.RankGained") + skill.output;
+                else if (skill.learned == true)
+                    skill.output = _host.get_Variable("ExpTracker.Color.Learned") + skill.output;
+                else
+                    skill.output = _host.get_Variable("ExpTracker.Color.Normal") + skill.output;
+
                 _skillList.Add(name, skill);
             }
 
@@ -751,7 +924,8 @@ namespace Standalone_EXPTracker
 
         private void ParseClear(string name)
         {
-            if( name.EndsWith("Magic") && !name.StartsWith("Targeted") )
+            _updateExp = true;
+            if (name.EndsWith("Magic") && !name.StartsWith("Targeted"))
                 name = "Primary Magic";
 
             Skill skill = new Skill();
@@ -795,6 +969,7 @@ namespace Standalone_EXPTracker
                 return Comparer.Default.Compare(((Sortskill)x).sortLearning, ((Sortskill)y).sortLearning);
             }
         }
+
         private void ShowExperience()
         {
             if (_host != null)
@@ -843,54 +1018,18 @@ namespace Standalone_EXPTracker
                         //suspsend so it behaves as an update, not as a scrolling window
                         _host.SendText("#echo >Experience @suspend@");
 
-                        //only echo the items that are in the sortList (non-clear learning ratE)
+                        //only echo the items that are in the sortList (non-clear learning rate)
                         foreach (Sortskill item in sortList)
                         {
-                            string output = "";
-                           
                             //get the skill info from the hash table
                             Skill skill = (Skill)_skillList[item.name];
-                           
-                            //Outputs name of skill (short or normal) & ranks
-                            if( _host.get_Variable("ExpTracker.ShortNames") == "1")
-                                output = String.Format("{0,7:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
-                            else
-                                output = String.Format("{0,15:G}:{1,9}", item.name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
-
-                            //Outputs Learning Rate NAME if set to
-                            if (_host.get_Variable("ExpTracker.LearningRate") == "1")
-                                output += String.Format(" {0,-13}", skill.learningRate);
-                            
-                            //Outputs Learning Rate NUMBER if set to
-                            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "1")
-                                output += String.Format("{0,8}", "(" + skill.iLearningRate + "/34)");
-
-                            //Calculate Skill gain
-                            double rankGain = skill.rank - skill.startRank;
-
-                            //Outputs Skill gain if set to 
-                            if (_host.get_Variable("ExpTracker.ShowRankGain") == "1")
-                                output += " +" + String.Format("{0:0.00}", rankGain);
-
-                            //Used for #echo >Window Options "   Text "
-                            //to preserve white space
-                            output = " \"" + output + "\"";
-
-                            //set color of text if ranked, or learned, or normal
-                            if (skill.rankGained == true)
-                                output = _host.get_Variable("ExpTracker.Color.RankGained") + output;
-                            else if (skill.learned == true)
-                                output = _host.get_Variable("ExpTracker.Color.Learned") + output;
-                            else
-                                output = _host.get_Variable("ExpTracker.Color.Normal") + output;
-
-                            _host.SendText("#echo >Experience " + output);
+                            _host.SendText("#echo >Experience " + skill.output);
                         }
 
                         //tdp and sleep are blank in case there is no info for them to output
                         string tdp = "";
                         string asleep = "";
-                        
+
                         if (_startTDP < _TDP)
                             tdp = ";#echo >Experience TDP gained: " + (_TDP - _startTDP);
                         if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.EchoSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1")
@@ -898,17 +1037,17 @@ namespace Standalone_EXPTracker
                                 asleep = ";#echo >Experience YOU ARE ASLEEP!";
                             else
                                 asleep = ";#echo >Experience " + _host.get_Variable("ExpTracker.Echo");
-                        
+
                         TimeSpan oTimeSpan = DateTime.Now - _startTime;
-                        
+
                         //Short or long version of mindstate
-                        string mindstatetext="";
+                        string mindstatetext = "";
                         if (_host.get_Variable("ExpTracker.ShortNames") == "1")
                             mindstatetext = "Mindstate: ";
                         else
                             mindstatetext = "Overall state of mind: ";
-                        
-                        _host.SendText("#echo >Experience "+ mindstatetext + _mindState + asleep + tdp + ";#echo >Experience Last updated: $time;#echo >Experience Tracking for: " + FormatTimeSpan(oTimeSpan));
+
+                        _host.SendText("#echo >Experience " + mindstatetext + _mindState + asleep + tdp + ";#echo >Experience Last updated: $time;#echo >Experience Tracking for: " + FormatTimeSpan(oTimeSpan));
                         //resume so the updates actually show
                         _host.SendText("#echo >Experience @resume@");
                     }
@@ -963,6 +1102,49 @@ namespace Standalone_EXPTracker
             }
 
             return txt;
+        }
+        
+        private void DisplayReport()
+        {
+            //list for sorting
+            ArrayList sortList = new ArrayList();
+
+            //iterate through the list of all skills
+            foreach (DictionaryEntry sk in _skillList)
+            {
+                Skill skill = (Skill)sk.Value;
+                //add the skill + sort types to the list of items to be sorted
+                if (skill.startRank - skill.rank != 0.0)
+                {
+                    Sortskill sortSkill = new Sortskill
+                    {
+                        name = sk.Key.ToString(),
+                        sortLR = ((Skill)sk.Value).sortLR,
+                        sortLearning = ((Skill)sk.Value).iLearningRate
+                    };
+                    sortList.Add(sortSkill);
+                }
+            }
+            //Sort based on type of sort.  
+            //1: Reading sort 
+            if (_host.get_Variable("ExpTracker.SortType") == "1")
+                sortList.Sort(new MyComparerLR());
+            //2: By Learning Rate
+            else if (_host.get_Variable("ExpTracker.SortType") == "2")
+                sortList.Sort(new MyComparerLearning());
+            //3: By Learning Rate Reverse
+            else if (_host.get_Variable("ExpTracker.SortType") == "3")
+                sortList.Sort(new MyComparerLearningRev());
+            //0/Default: Alphabetical
+            else
+                sortList.Sort(new MyComparer());
+
+            foreach (Sortskill item in sortList)
+            {
+                //get the skill info from the hash table
+                Skill skill = (Skill)_skillList[item.name];
+                _host.SendText("#echo " + skill.output);
+            }
         }
         #endregion
 

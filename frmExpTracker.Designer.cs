@@ -1,6 +1,6 @@
-﻿namespace Standalone_EXPTracker
+﻿namespace EXPTracker
 {
-    partial class Form1
+    partial class frmEXPTracker
     {
         /// <summary>
         /// Required designer variable.

@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Standalone_EXPTracker
+namespace EXPTracker
 {
-    public partial class Form1 : Form
+    public partial class frmEXPTracker : Form
     {
         private GeniePlugin.Interfaces.IHost _host;
 
-        public Form1(ref GeniePlugin.Interfaces.IHost host)
+        public frmEXPTracker(ref GeniePlugin.Interfaces.IHost host)
         {
             InitializeComponent();
 
@@ -22,56 +22,56 @@ namespace Standalone_EXPTracker
         private void btnOk_Click(object sender, EventArgs e)
         {
             if (cbEnable.Checked == true)
-                _host.set_Variable("ExpTracker.Window", "1");
+                _host.SendText("#var ExpTracker.Window 1");
             else
-                _host.set_Variable("ExpTracker.Window", "0");
+                _host.SendText("#var ExpTracker.Window 0");
 
             if (cbRankGain.Checked == true)
-                _host.set_Variable("ExpTracker.ShowRankGain", "1");
+                _host.SendText("#var ExpTracker.ShowRankGain 1");
             else
-                _host.set_Variable("ExpTracker.ShowRankGain", "0");
+                _host.SendText("#var ExpTracker.ShowRankGain 0");
 
             if (cbLearningRate.Checked == true)
-                _host.set_Variable("ExpTracker.LearningRate", "1");
+                _host.SendText("#var ExpTracker.LearningRate 1");
             else
-                _host.set_Variable("ExpTracker.LearningRate", "0");
+                _host.SendText("#var ExpTracker.LearningRate 0");
 
             if (cbLearningRateNumber.Checked == true)
-                _host.set_Variable("ExpTracker.LearningRateNumber", "1");
+                _host.SendText("#var ExpTracker.LearningRateNumber 1");
             else
-                _host.set_Variable("ExpTracker.LearningRateNumber", "0");
+                _host.SendText("#var ExpTracker.LearningRateNumber 0");
 
             if (cbTrackSleep.Checked == true)
-                _host.set_Variable("ExpTracker.TrackSleep", "1");
+                _host.SendText("#var ExpTracker.TrackSleep 1");
             else
-                _host.set_Variable("ExpTracker.TrackSleep", "0");
+                _host.SendText("#var ExpTracker.TrackSleep 0");
 
             if (cbEchoSleep.Checked == true)
-                _host.set_Variable("ExpTracker.EchoSleep", "1");
+                _host.SendText("#var ExpTracker.EchoSleep 1");
             else
-                _host.set_Variable("ExpTracker.EchoSleep", "0");
-            _host.set_Variable("ExpTracker.Echo", txtEcho.Text);
+                _host.SendText("#var ExpTracker.EchoSleep 0");
+            _host.SendText("#var ExpTracker.Echo" + txtEcho.Text);
             
             if (comboSort.Text == "A to Z")
-                _host.set_Variable("ExpTracker.SortType", "0");
+                _host.SendText("#var ExpTracker.SortType 0");
             else if (comboSort.Text == "Left to Right")
-                _host.set_Variable("ExpTracker.SortType", "1");
+                _host.SendText("#var ExpTracker.SortType 1");
             else
-                _host.set_Variable("ExpTracker.SortType", "2");
+                _host.SendText("#var ExpTracker.SortType 2");
 
             if (cbGagExp.Checked == true)
-                _host.set_Variable("ExpTracker.GagExp", "1");
+                _host.SendText("#var ExpTracker.GagExp 1");
             else
-                _host.set_Variable("ExpTracker.GagExp", "0");
+                _host.SendText("#var ExpTracker.GagExp 0");
 
             if (cbShort.Checked == true)
-                _host.set_Variable("ExpTracker.ShortNames", "1");
+                _host.SendText("#var ExpTracker.ShortNames 1");
             else
-                _host.set_Variable("ExpTracker.ShortNames", "0");
+                _host.SendText("#var ExpTracker.ShortNames 0");
 
-            _host.set_Variable("ExpTracker.Color.RankGained", txtRankGained.Text);
-            _host.set_Variable("ExpTracker.Color.Learned", txtLearned.Text);
-            _host.set_Variable("ExpTracker.Color.Normal", txtNormal.Text);
+            _host.SendText("#var ExpTracker.Color.RankGained" + txtRankGained.Text);
+            _host.SendText("#var ExpTracker.Color.Learned" + txtLearned.Text);
+            _host.SendText("#var ExpTracker.Color.Normal" + txtNormal.Text);
 
             _host.SendText("#var save");
 
