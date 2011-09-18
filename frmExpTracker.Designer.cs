@@ -1,6 +1,6 @@
-﻿namespace Standalone_EXPTracker
+﻿namespace EXPTracker
 {
-    partial class Form1
+    partial class frmEXPTracker
     {
         /// <summary>
         /// Required designer variable.
@@ -256,7 +256,7 @@
             "Learning Rate",
             "Learning Rate Reverse"});
             this.comboSort.Location = new System.Drawing.Point(370, 29);
-            this.comboSort.MaxDropDownItems = 4;
+            this.comboSort.MaxDropDownItems = 3;
             this.comboSort.Name = "comboSort";
             this.comboSort.Size = new System.Drawing.Size(151, 21);
             this.comboSort.TabIndex = 10;
