@@ -11,7 +11,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         string _NAME = "EXPTracker";
-        string _VERSION = "2.0.0";
+        string _VERSION = "2.0.2";
         string _AUTHOR = "VTCifer";
         string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -182,13 +182,13 @@ namespace EXPTracker
                 _host.SendText("#var ExpTracker.GagExp 0");
 
             if (_host.get_Variable("ExpTracker.Color.Normal") == "")
-                _host.SendText("#var ExpTracker.Color.Normal WhiteSmoke");
+                _host.SendText("#var {ExpTracker.Color.Normal} {WhiteSmoke}");
 
             if (_host.get_Variable("ExpTracker.Color.RankGained") == "")
-                _host.SendText("#var ExpTracker.Color.RankGained WhiteSmoke");
+                _host.SendText("#var {ExpTracker.Color.RankGained} {WhiteSmoke}");
 
             if (_host.get_Variable("ExpTracker.Color.Learned") == "")
-                _host.SendText("#var ExpTracker.Color.Learned WhiteSmoke");
+                _host.SendText("#var {ExpTracker.Color.Learned} {WhiteSmoke}");
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "")
                 _host.SendText("#var ExpTracker.ShortNames 0");
