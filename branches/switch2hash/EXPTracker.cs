@@ -11,7 +11,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         string _NAME = "EXPTracker";
-        string _VERSION = "2.0.0";
+        string _VERSION = "2.2.0";
         string _AUTHOR = "VTCifer";
         string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -22,14 +22,14 @@ namespace EXPTracker
 
         private DateTime _startTime;                    //Used for TDP/Rank tracking to know how long tracking since
         private Hashtable _skillList = new Hashtable(); //Used for storing/sorting skills for display in Exp Win
-        private int _TDP;                               //Used for TDP tracking, this is current TDPs
-        private int _startTDP = 0;                      //Used for TDP tracking, this is set when first checking
+        private int _TDP = -1;                               //Used for TDP tracking, this is current TDPs
+        private int _startTDP = -1;                      //Used for TDP tracking, this is set when first checking
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
         private bool _sleeping = false;                 //Used for tracking if you are sleeping or not
         private string _mindState = "";                 //Used for converting mindstate parsed to an integer for GenieVariable
         private bool _report = false;                   //Used for ParseText, to know if you are running a report
-
+        private bool _ExpBrief = false;
         private bool _enabled = true;                   //Used for "Pausing" the tracker, so no new data is input.  Also used to disable from
                                                         //Plugins Window
 
@@ -61,7 +61,8 @@ namespace EXPTracker
             public bool learned = false;            //Used for displaying text in a specific color when bits are added to pool
             public int sortLR = 0;                  //Used for sorting As reading, Left to Right
             public string shortname = "";           //Used for short name display instead of long name
-            public string output = "";
+            public string output = "";              //Used for output of skill info -> Exp window and tracking
+            public string parseoutput = "";         //Used for output using #parse of skill info -> only used in tracking
         }
 
         //Class Sortskill
@@ -340,56 +341,18 @@ namespace EXPTracker
                 //Reset all tracking, to current value for skills/TDPS
                 if (Text == "/trackreset" || Text == "/track reset")
                 {
-                    //Reset TDP tracking
-                    _TDP = 0;
-                    _startTDP = 0;
-
-                    //Reset "Tracking Since"
-                    _startTime = DateTime.Now;
-
-                    //Reset skill tracking to current values
-                    IDictionaryEnumerator en = _skillList.GetEnumerator();
-                    Hashtable ht = new Hashtable(67);
-                    while (en.MoveNext())
-                    {
-                        Skill obj = (Skill)en.Value;
-                        obj.startRank = obj.rank;
-                        ht.Add(en.Key, obj);
-                    }
-                    _skillList.Clear();
-                    _skillList = ht;
-
-                    //Alert User Tracking is Reset
-                    _host.SendText("#echo");
-                    _host.SendText("#echo Rank tracking reset.");
+                    ResetTracking();
                     return "";
                 }
                 //Resets all tracking to 0, as if Genie just launched
                 else if (Text == "/track clear")
                 {
-                    //Reset TDP tracking
-                    _TDP = 0;
-                    _startTDP = 0;
-
-                    //Reset "Tracking Since"
-                    _startTime = DateTime.Now;
-
-                    //Reset all skill tracking info to start values
-                    _skillList.Clear();
-                    _skillList = new Hashtable(67);
-
-                    //Alert User of Reset:
-                    _host.SendText("#echo");
-                    _host.SendText("#echo XP Tracker reset to intial values");
+                    ClearTracking();
                     return "";
                 }
                 else if (Text == "/track tdp reset")
                 {
-                    _TDP = 0;
-                    _startTDP = 0;
-
-                    _host.SendText("#echo");
-                    _host.SendText("#echo TDP tracking reset");
+                    ResetTDP();
                     return "";
                 }
                 //Pauses XP Tracker until /trackresume is seen
@@ -459,12 +422,6 @@ namespace EXPTracker
             {
                 if (_host != null)
                 {
-                    //Report has been finished generated (String is last line of exp output)
-                    if (_report == true && Text.StartsWith("EXP HELP for more information"))
-                    {
-                        _report = false;
-                        DisplayReport();
-                    }
                     if (_parsing == true)
                     {
                         //Parsing of Plain text EXP is done at this point.
@@ -473,12 +430,12 @@ namespace EXPTracker
                             _parsing = false;
                             //The following are set up to only modify the ExpTracker.Sleeping Variable IF it needs to be changed, 
                             //since it forces a variable save
-                            if (_sleeping == true && _host.get_Variable("TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "1")
+                            if (_sleeping == true && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "1")
                             {
                                 _host.SendText("#var ExpTracker.Sleeping 1");
                                 _host.SendText("#var save");
                             }
-                            else if (_sleeping == false && _host.get_Variable("TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0")
+                            else if (_sleeping == false && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0")
                             {
                                 _host.SendText("#var ExpTracker.Sleeping 0");
                                 _host.SendText("#var save");
@@ -506,7 +463,7 @@ namespace EXPTracker
                         else if (Text.StartsWith("Time Development Points:"))
                         {
                             _TDP = Convert.ToInt32(Text.Substring(24, Text.IndexOf("Favors") - 24).Trim());
-                            if (_startTDP == 0)
+                            if (_startTDP == -1)
                                 _startTDP = _TDP;
                         }
                         //string for sleeping
@@ -519,6 +476,12 @@ namespace EXPTracker
                         _parsing = true;
                         //Assume not sleeping, since there is no string when you're not.
                         _sleeping = false;
+                    }
+                    //Report has been finished generated (String is last line of exp output)
+                    if (_report == true && Text.StartsWith("EXP HELP for more information"))
+                    {
+                        _report = false;
+                        DisplayReport();
                     }
 
                     //Following two the response strings for when you sleeping/awake
@@ -561,6 +524,17 @@ namespace EXPTracker
             //trigger update checks with XML prompt
             if (XML.Contains("prompt"))
             {
+                if (_ExpBrief)
+                {
+                    _host.SendText("#echo white,red The ExpBrief Toggle is not supported.");
+                    _host.SendText("#echo white,red Turning it off and clearing tracking data:");
+                    ClearTracking();
+                    _host.SendText("FLAG BRIEFEXP OFF");
+                    _host.SendText("EXP");
+                    _ExpBrief = false;
+                }
+
+                
                 //However, only ouptut the update, if there is an update
                 //for the exp window.
                 if (_updateExp == true)
@@ -576,11 +550,18 @@ namespace EXPTracker
             //<component id='exp Hiding'>          Hiding:  398 33% rapt         </component>
             //XML Data for plused to clear skills
             //<component id='exp Climbing'></component>
+            //XML Data for skill when the unsupported ExpBrief Toggle is used:
+            //<component id='exp Foraging'><d cmd='skill Foraging'> Forage</d>:  402 65%  [ 9/34]</component>
+
 
             //if (XML.Contains("component") && XML.Contains("exp "))
             //Trying out possibly better String function
             if(XML.StartsWith("<component id='exp "))
             {
+                if ( XML.Contains("[") )
+                {
+                    _ExpBrief = true;
+                }
                 XmlDocument doc = new XmlDocument();
 
                 doc.LoadXml("<doc>" + XML + "</doc>");
@@ -718,6 +699,11 @@ namespace EXPTracker
             else
                 form.cbEnable.Checked = false;
 
+            if (_host.get_Variable("ExpTracker.Persistent") == "1")
+                form.cbPersistent.Checked = true;
+            else
+                form.cbPersistent.Checked = false;
+
             if (parent != null)
                 form.MdiParent = parent;
 
@@ -849,7 +835,8 @@ namespace EXPTracker
                 {
                     //Calculate Skill gain
                     double rankGain = skill.rank - skill.startRank;
-                    skill.output += " +" + String.Format("{0:0.00}", rankGain);
+                    if (rankGain >= 0) skill.output += " +" + String.Format("{0:0.00}", rankGain);
+                    else skill.output += " " + String.Format("{0:0.00}", rankGain);
                 }
                 //Used for #echo >Window Options "   Text "
                 //to preserve white space
@@ -900,8 +887,10 @@ namespace EXPTracker
                 {
                     //Calculate Skill gain
                     double rankGain = skill.rank - skill.startRank;
-                    skill.output += " +" + String.Format("{0:0.00}", rankGain);
+                    if (rankGain >= 0) skill.output += " +" + String.Format("{0:0.00}", rankGain);
+                    else skill.output += " " + String.Format("{0:0.00}", rankGain);
                 }
+                skill.parseoutput = skill.output;
                 //Used for #echo >Window Options "   Text "
                 //to preserve white space
                 skill.output = " \"" + skill.output + "\"";
@@ -917,8 +906,16 @@ namespace EXPTracker
                 _skillList.Add(name, skill);
             }
 
-            _host.set_Variable(name.Replace(" ", "_") + ".LearningRate", GetLearningRateInt(learningRate).ToString());
-            _host.set_Variable(name.Replace(" ", "_") + ".Ranks", dRank.ToString());
+            if (_host.get_Variable("ExpTracker.Persistent") == "1")
+            {
+                _host.SendText("#var {" + name.Replace(" ", "_") + ".LearningRate} {" + GetLearningRateInt(learningRate).ToString() + "}");
+                _host.SendText("#var {" + name.Replace(" ", "_") + ".Ranks} {" + dRank.ToString() + "}");
+            }
+            else
+            {
+                _host.set_Variable(name.Replace(" ", "_") + ".LearningRate", GetLearningRateInt(learningRate).ToString());
+                _host.set_Variable(name.Replace(" ", "_") + ".Ranks", dRank.ToString());
+            }
 
         }
 
@@ -1030,8 +1027,13 @@ namespace EXPTracker
                         string tdp = "";
                         string asleep = "";
 
-                        if (_startTDP < _TDP)
-                            tdp = ";#echo >Experience TDP gained: " + (_TDP - _startTDP);
+                        if (_TDP >= 0)
+                        {
+                            tdp = ";#echo >Experience TDPs: " + _TDP;
+
+                            if (_startTDP < _TDP)
+                                tdp = tdp + "  Gained: " + (_TDP - _startTDP);
+                        }
                         if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.EchoSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1")
                             if (_host.get_Variable("ExpTracker.Echo") == "")
                                 asleep = ";#echo >Experience YOU ARE ASLEEP!";
@@ -1144,7 +1146,63 @@ namespace EXPTracker
                 //get the skill info from the hash table
                 Skill skill = (Skill)_skillList[item.name];
                 _host.SendText("#echo " + skill.output);
+                _host.SendText("#parse " + skill.parseoutput);
             }
+        }
+        #endregion
+
+        #region Helper functions - reset, clear
+
+        public void ResetTracking()
+        {
+            //Reset TDP tracking
+            _TDP = -1;
+            _startTDP = -1;
+
+            //Reset "Tracking Since"
+            _startTime = DateTime.Now;
+
+            //Reset skill tracking to current values
+            IDictionaryEnumerator en = _skillList.GetEnumerator();
+            Hashtable ht = new Hashtable(67);
+            while (en.MoveNext())
+            {
+                Skill obj = (Skill)en.Value;
+                obj.startRank = obj.rank;
+                ht.Add(en.Key, obj);
+            }
+            _skillList.Clear();
+            _skillList = ht;
+
+            //Alert User Tracking is Reset
+            _host.SendText("#echo");
+            _host.SendText("#echo Rank tracking reset.");
+        }
+        
+        public void ClearTracking()
+        {
+            //Reset TDP tracking
+            _TDP = -1;
+            _startTDP = -1;
+
+            //Reset "Tracking Since"
+            _startTime = DateTime.Now;
+
+            //Reset all skill tracking info to start values
+            _skillList.Clear();
+            _skillList = new Hashtable(67);
+
+            //Alert User of Reset:
+            _host.SendText("#echo");
+            _host.SendText("#echo XP Tracker reset to intial values");
+        }
+        public void ResetTDP()
+        {
+            _TDP = -1;
+            _startTDP = -1;
+
+            _host.SendText("#echo");
+            _host.SendText("#echo TDP tracking reset");
         }
         #endregion
 

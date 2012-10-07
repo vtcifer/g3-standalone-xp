@@ -50,7 +50,7 @@ namespace EXPTracker
                 _host.SendText("#var ExpTracker.EchoSleep 1");
             else
                 _host.SendText("#var ExpTracker.EchoSleep 0");
-            _host.SendText("#var ExpTracker.Echo" + txtEcho.Text);
+            _host.SendText("#var {ExpTracker.Echo} {" + txtEcho.Text + "}");
             
             if (comboSort.Text == "A to Z")
                 _host.SendText("#var ExpTracker.SortType 0");
@@ -69,9 +69,14 @@ namespace EXPTracker
             else
                 _host.SendText("#var ExpTracker.ShortNames 0");
 
-            _host.SendText("#var ExpTracker.Color.RankGained" + txtRankGained.Text);
-            _host.SendText("#var ExpTracker.Color.Learned" + txtLearned.Text);
-            _host.SendText("#var ExpTracker.Color.Normal" + txtNormal.Text);
+            if (cbPersistent.Checked == true)
+                _host.SendText("#var ExpTracker.Persistent 1");
+            else
+                _host.SendText("#var ExpTracker.Persistent 0");
+
+            _host.SendText("#var {ExpTracker.Color.RankGained} {" + txtRankGained.Text + "}");
+            _host.SendText("#var {ExpTracker.Color.Learned} {" + txtLearned.Text + "}");
+            _host.SendText("#var {ExpTracker.Color.Normal} {" + txtNormal.Text + "}");
 
             _host.SendText("#var save");
 
