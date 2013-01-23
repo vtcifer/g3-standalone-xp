@@ -249,5 +249,10 @@ namespace EXPTracker
                 txtEcho.Enabled = false;
         }
 
+        private void cbPersistent_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }

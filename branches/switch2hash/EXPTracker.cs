@@ -4,6 +4,7 @@ using GeniePlugin.Interfaces;
 using System.Xml;
 using System.Text.RegularExpressions;
 
+
 namespace EXPTracker
 {
     public class EXPTracker : IPlugin
@@ -11,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         string _NAME = "EXPTracker";
-        string _VERSION = "2.2.0";
+        string _VERSION = "3.0.1";
         string _AUTHOR = "VTCifer";
         string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -20,10 +21,15 @@ namespace EXPTracker
 
         #region EXPTracker Members
 
+        private const int MAX_SKILL = 69;                       //Total of 69 skills in game
+        private const int MAX_LEARNRATE = 35;                   //Max Learning rates: 0 - 34
+        private const int MAX_MINDSTATE = 12;                   //Max Mindstates clear - frozen = 12
+
         private DateTime _startTime;                    //Used for TDP/Rank tracking to know how long tracking since
         private Hashtable _skillList = new Hashtable(); //Used for storing/sorting skills for display in Exp Win
-        private int _TDP = -1;                               //Used for TDP tracking, this is current TDPs
-        private int _startTDP = -1;                      //Used for TDP tracking, this is set when first checking
+        private int _TDP = 0;                           //Used for TDP tracking, this is current TDPs
+        private int _startTDP = 0;                      //Used for TDP tracking, this is set when first checking
+        private bool _trackingTDP = false;              //Used for TDP tracking, this it to know when the plugin has gathered TDP info
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
         private bool _sleeping = false;                 //Used for tracking if you are sleeping or not
@@ -154,7 +160,7 @@ namespace EXPTracker
             //Set startTime to the time the plugin was called (used in how long tracking has been occuring)
             _startTime = DateTime.Now;
             //Create hash table for all skills
-            _skillList = new Hashtable(67);
+            _skillList = new Hashtable(MAX_SKILL);
 
             //Set Genie Variables if not already set
 
@@ -197,87 +203,105 @@ namespace EXPTracker
             //create AND popluate the master hashtables
             //This in theory should front load processing time for when Genie loads
             //and speed up the time it takes to parse, and generate EXP window data.
-            MasterSkill = new Hashtable(72);
-            //Armor skills
+            
+            //
+            MasterSkill = new Hashtable(MAX_SKILL);
+            //Armor skills - 7
             MasterSkill.Add("Shield Usage", new ItemMasterSkill { SortLR = 0, ShortName = "Shield" });
-            MasterSkill.Add("Leather Armor", new ItemMasterSkill { SortLR = 1, ShortName = "Leather" });
-            MasterSkill.Add("Light Chain", new ItemMasterSkill { SortLR = 2, ShortName = "LC" });
-            MasterSkill.Add("Heavy Chain", new ItemMasterSkill { SortLR = 3, ShortName = "HC" });
-            MasterSkill.Add("Light Plate", new ItemMasterSkill { SortLR = 4, ShortName = "LP" });
-            MasterSkill.Add("Heavy Plate", new ItemMasterSkill { SortLR = 5, ShortName = "HP" });
-            MasterSkill.Add("Cloth Armor", new ItemMasterSkill { SortLR = 6, ShortName = "Cloth" });
-            MasterSkill.Add("Bone Armor", new ItemMasterSkill { SortLR = 7, ShortName = "Bone" });
-            //Weapon Skills            
+            MasterSkill.Add("Light Armor", new ItemMasterSkill { SortLR = 1, ShortName = "Lt Armor" });
+            MasterSkill.Add("Chain Armor", new ItemMasterSkill { SortLR = 2, ShortName = "Chain" });
+            MasterSkill.Add("Brigandine", new ItemMasterSkill { SortLR = 3, ShortName = "Brigan" });
+            MasterSkill.Add("Plate Armor", new ItemMasterSkill { SortLR = 4, ShortName = "Plate" });
+            MasterSkill.Add("Defending", new ItemMasterSkill { SortLR = 5, ShortName = "Defend" });
+            MasterSkill.Add("Endurance", new ItemMasterSkill { SortLR = 6, ShortName = "Endure" });
+            
+            //Weapon Skills - 19
             MasterSkill.Add("Parry Ability", new ItemMasterSkill { SortLR = 100, ShortName = "Parry" });
-            MasterSkill.Add("Multi Opponent", new ItemMasterSkill { SortLR = 101, ShortName = "MO" });
-            MasterSkill.Add("Light Edged", new ItemMasterSkill { SortLR = 102, ShortName = "LE" });
-            MasterSkill.Add("Medium Edged", new ItemMasterSkill { SortLR = 103, ShortName = "ME" });
-            MasterSkill.Add("Heavy Edged", new ItemMasterSkill { SortLR = 104, ShortName = "HE" });
-            MasterSkill.Add("Twohanded Edged", new ItemMasterSkill { SortLR = 105, ShortName = "2HE" });
-            MasterSkill.Add("Light Blunt", new ItemMasterSkill { SortLR = 106, ShortName = "LB" });
-            MasterSkill.Add("Medium Blunt", new ItemMasterSkill { SortLR = 107, ShortName = "MB" });
-            MasterSkill.Add("Heavy Blunt", new ItemMasterSkill { SortLR = 108, ShortName = "HB" });
-            MasterSkill.Add("Twohanded Blunt", new ItemMasterSkill { SortLR = 109, ShortName = "2HB" });
-            MasterSkill.Add("Slings", new ItemMasterSkill { SortLR = 110, ShortName = "Sling" });
-            MasterSkill.Add("Staff Sling", new ItemMasterSkill { SortLR = 111, ShortName = "S Sling" });
-            MasterSkill.Add("Short Bow", new ItemMasterSkill { SortLR = 112, ShortName = "S Bow" });
-            MasterSkill.Add("Long Bow", new ItemMasterSkill { SortLR = 113, ShortName = "L Bow" });
-            MasterSkill.Add("Composite Bow", new ItemMasterSkill { SortLR = 114, ShortName = "C Bow" });
-            MasterSkill.Add("Light Crossbow", new ItemMasterSkill { SortLR = 115, ShortName = "LX" });
-            MasterSkill.Add("Heavy Crossbow", new ItemMasterSkill { SortLR = 116, ShortName = "HX" });
-            MasterSkill.Add("Short Staff", new ItemMasterSkill { SortLR = 117, ShortName = "S Staff" });
-            MasterSkill.Add("Quarter Staff", new ItemMasterSkill { SortLR = 118, ShortName = "Q Staff" });
-            MasterSkill.Add("Pikes", new ItemMasterSkill { SortLR = 119, ShortName = "Pike" });
-            MasterSkill.Add("Halberds", new ItemMasterSkill { SortLR = 120, ShortName = "Halberd" });
-            MasterSkill.Add("Light Thrown", new ItemMasterSkill { SortLR = 121, ShortName = "LT" });
-            MasterSkill.Add("Heavy Thrown", new ItemMasterSkill { SortLR = 122, ShortName = "HT" });
-            MasterSkill.Add("Brawling", new ItemMasterSkill { SortLR = 123, ShortName = "Brawl" });
-            MasterSkill.Add("Offhand Weapon", new ItemMasterSkill { SortLR = 124, ShortName = "Offhand" });
-            //Magic Skills
-            MasterSkill.Add("Lunar Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Life Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Holy Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Elemental Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Inner Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Small Edged", new ItemMasterSkill { SortLR = 101, ShortName = "SE" });
+            MasterSkill.Add("Large Edged", new ItemMasterSkill { SortLR = 102, ShortName = "LE" });
+            MasterSkill.Add("Twohanded Edged", new ItemMasterSkill { SortLR = 103, ShortName = "2HE" });
+            MasterSkill.Add("Small Blunt", new ItemMasterSkill { SortLR = 104, ShortName = "SB" });
+            MasterSkill.Add("Large Blunt", new ItemMasterSkill { SortLR = 105, ShortName = "LB" });
+            MasterSkill.Add("Twohanded Blunt", new ItemMasterSkill { SortLR = 106, ShortName = "2HB" });
+            MasterSkill.Add("Slings", new ItemMasterSkill { SortLR = 107, ShortName = "Sling" });
+            MasterSkill.Add("Bow", new ItemMasterSkill { SortLR = 108, ShortName = "Bow" });
+            MasterSkill.Add("Crossbow", new ItemMasterSkill { SortLR = 109, ShortName = "XBow" });
+            MasterSkill.Add("Staves", new ItemMasterSkill { SortLR = 110, ShortName = "Staves" });
+            MasterSkill.Add("Polearms", new ItemMasterSkill { SortLR = 111, ShortName = "Polearm" });
+            MasterSkill.Add("Light Thrown", new ItemMasterSkill { SortLR = 112, ShortName = "LT" });
+            MasterSkill.Add("Heavy Thrown", new ItemMasterSkill { SortLR = 113, ShortName = "HT" });
+            MasterSkill.Add("Brawling", new ItemMasterSkill { SortLR = 114, ShortName = "Brawl" });
+            MasterSkill.Add("Offhand Weapon", new ItemMasterSkill { SortLR = 115, ShortName = "Offhand" });
+            MasterSkill.Add("Melee Mastery", new ItemMasterSkill { SortLR = 116, ShortName = "Melee" });
+            MasterSkill.Add("Missile Mastery", new ItemMasterSkill { SortLR = 117, ShortName = "Missile" });
+            MasterSkill.Add("Expertise", new ItemMasterSkill { SortLR = 118, ShortName = "Expert" });
+     
+            //Magic Skills - 18
             MasterSkill.Add("Arcane Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Harness Ability", new ItemMasterSkill { SortLR = 201, ShortName = "Harness" });
-            MasterSkill.Add("Power Perceive", new ItemMasterSkill { SortLR = 202, ShortName = "PP" });
-            MasterSkill.Add("Arcana", new ItemMasterSkill { SortLR = 203, ShortName = "Arcana" });
-            MasterSkill.Add("Targeted Magic", new ItemMasterSkill { SortLR = 204, ShortName = "TM" });
-            //Survival Skills
+            MasterSkill.Add("Elemental Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Holy Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Inner Fire", new ItemMasterSkill { SortLR = 200, ShortName = "IF" });
+            MasterSkill.Add("Inner Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Life Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Lunar Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
+            MasterSkill.Add("Attunement", new ItemMasterSkill { SortLR = 201, ShortName = "Attune" });
+            MasterSkill.Add("Arcana", new ItemMasterSkill { SortLR = 202, ShortName = "Arcana" });
+            MasterSkill.Add("Targeted Magic", new ItemMasterSkill { SortLR = 203, ShortName = "TM" });
+            MasterSkill.Add("Augmentation", new ItemMasterSkill { SortLR = 204, ShortName = "Augment" });
+            MasterSkill.Add("Debilitation", new ItemMasterSkill { SortLR = 205, ShortName = "Debilit" });
+            MasterSkill.Add("Utility", new ItemMasterSkill { SortLR = 206, ShortName = "Utility" });
+            MasterSkill.Add("Warding", new ItemMasterSkill { SortLR = 207, ShortName = "Warding" });
+            MasterSkill.Add("Sorcery", new ItemMasterSkill { SortLR = 208, ShortName = "Sorcery" });
+            MasterSkill.Add("Astrology", new ItemMasterSkill { SortLR = 209, ShortName = "Astro" });
+            MasterSkill.Add("Summoning", new ItemMasterSkill { SortLR = 209, ShortName = "Summon" });
+            MasterSkill.Add("Theurgy", new ItemMasterSkill { SortLR = 209, ShortName = "Theurgy" });
+ 
+            //Survival Skills - 12
             MasterSkill.Add("Evasion", new ItemMasterSkill { SortLR = 300, ShortName = "Evade" });
-            MasterSkill.Add("Climbing", new ItemMasterSkill { SortLR = 301, ShortName = "Climb" });
+            MasterSkill.Add("Athletics", new ItemMasterSkill { SortLR = 301, ShortName = "Athletic" });
             MasterSkill.Add("Perception", new ItemMasterSkill { SortLR = 302, ShortName = "Percep" });
-            MasterSkill.Add("Scouting", new ItemMasterSkill { SortLR = 303, ShortName = "Scout" });
-            MasterSkill.Add("Hiding", new ItemMasterSkill { SortLR = 304, ShortName = "Hide" });
-            MasterSkill.Add("Lockpicking", new ItemMasterSkill { SortLR = 305, ShortName = "Locks" });
-            MasterSkill.Add("Disarm Traps", new ItemMasterSkill { SortLR = 306, ShortName = "Disarm" });
-            MasterSkill.Add("Stalking", new ItemMasterSkill { SortLR = 307, ShortName = "Stalk" });
-            MasterSkill.Add("Stealing", new ItemMasterSkill { SortLR = 308, ShortName = "Steal" });
-            MasterSkill.Add("First Aid", new ItemMasterSkill { SortLR = 309, ShortName = "FA" });
-            MasterSkill.Add("Foraging", new ItemMasterSkill { SortLR = 310, ShortName = "Forage" });
-            MasterSkill.Add("Escaping", new ItemMasterSkill { SortLR = 311, ShortName = "Escape" });
-            MasterSkill.Add("Backstab", new ItemMasterSkill { SortLR = 312, ShortName = "BS" });
-            MasterSkill.Add("Skinning", new ItemMasterSkill { SortLR = 313, ShortName = "Skin" });
-            MasterSkill.Add("Swimming", new ItemMasterSkill { SortLR = 314, ShortName = "Swim" });
-            //Lore Skills
-            MasterSkill.Add("Scholarship", new ItemMasterSkill { SortLR = 400, ShortName = "Scholar" });
-            MasterSkill.Add("Mechanical Lore", new ItemMasterSkill { SortLR = 401, ShortName = "Mech" });
-            MasterSkill.Add("Musical Theory", new ItemMasterSkill { SortLR = 402, ShortName = "Music" });
-            MasterSkill.Add("Appraisal", new ItemMasterSkill { SortLR = 403, ShortName = "App" });
-            MasterSkill.Add("Teaching", new ItemMasterSkill { SortLR = 404, ShortName = "Teach" });
-            MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 405, ShortName = "Trade" });
-            MasterSkill.Add("Animal Lore", new ItemMasterSkill { SortLR = 406, ShortName = "Animal" });
-            MasterSkill.Add("Percussions", new ItemMasterSkill { SortLR = 407, ShortName = "Percuss" });
-            MasterSkill.Add("Strings", new ItemMasterSkill { SortLR = 408, ShortName = "Strings" });
-            MasterSkill.Add("Winds", new ItemMasterSkill { SortLR = 409, ShortName = "Winds" });
-            MasterSkill.Add("Vocals", new ItemMasterSkill { SortLR = 410, ShortName = "Vocals" });
-            MasterSkill.Add("Astrology", new ItemMasterSkill { SortLR = 411, ShortName = "Astro" });
-            MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 412, ShortName = "Empathy" });
-            MasterSkill.Add("Thanatology", new ItemMasterSkill { SortLR = 413, ShortName = "Than" });
+            MasterSkill.Add("Stealth", new ItemMasterSkill { SortLR = 303, ShortName = "Stealth" });
+            MasterSkill.Add("Locksmithing", new ItemMasterSkill { SortLR = 304, ShortName = "Locks" });
+            MasterSkill.Add("Thievery", new ItemMasterSkill { SortLR = 305, ShortName = "Thievery" });
+            MasterSkill.Add("First Aid", new ItemMasterSkill { SortLR = 306, ShortName = "FA" });
+            MasterSkill.Add("Outdoorsmanship", new ItemMasterSkill { SortLR = 307, ShortName = "Outdoor" });
+            MasterSkill.Add("Skinning", new ItemMasterSkill { SortLR = 308, ShortName = "Skin" });
+            MasterSkill.Add("Backstab", new ItemMasterSkill { SortLR = 309, ShortName = "BS" });
+            MasterSkill.Add("Scouting", new ItemMasterSkill { SortLR = 309, ShortName = "Scout" });
+            MasterSkill.Add("Thanatology", new ItemMasterSkill { SortLR = 309, ShortName = "Than" });
+            
+            //Lore Skills - 13
+            MasterSkill.Add("Forging", new ItemMasterSkill { SortLR = 401, ShortName = "Forging" });
+            MasterSkill.Add("Engineering", new ItemMasterSkill { SortLR = 402, ShortName = "Engineer" });
+            MasterSkill.Add("Outfitting", new ItemMasterSkill { SortLR = 403, ShortName = "Outfit" });
+            MasterSkill.Add("Alchemy", new ItemMasterSkill { SortLR = 404, ShortName = "Alchemy" });
+            MasterSkill.Add("Enchanting", new ItemMasterSkill { SortLR = 405, ShortName = "Enchant" });
+            MasterSkill.Add("Scholarship", new ItemMasterSkill { SortLR = 406, ShortName = "Scholar" });
+            MasterSkill.Add("Mechanical Lore", new ItemMasterSkill { SortLR = 407, ShortName = "Mech" });
+            MasterSkill.Add("Appraisal", new ItemMasterSkill { SortLR = 408, ShortName = "App" });
+            MasterSkill.Add("Performance", new ItemMasterSkill { SortLR = 409, ShortName = "Perform" });
+            MasterSkill.Add("Tactics", new ItemMasterSkill { SortLR = 410, ShortName = "Tactics" });
+            MasterSkill.Add("Bardic Lore", new ItemMasterSkill { SortLR = 410, ShortName = "BardLore" });
+            MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 410, ShortName = "Empathy" });
+            MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 410, ShortName = "Trading" });
+/*
+*          MasterSkill.Add("Scholarship", new ItemMasterSkill { SortLR = 400, ShortName = "Scholar" });
+*          MasterSkill.Add("Mechanical Lore", new ItemMasterSkill { SortLR = 401, ShortName = "Mech" });
+*          MasterSkill.Add("Musical Theory", new ItemMasterSkill { SortLR = 402, ShortName = "Music" });
+*          MasterSkill.Add("Appraisal", new ItemMasterSkill { SortLR = 403, ShortName = "App" });
+*          MasterSkill.Add("Teaching", new ItemMasterSkill { SortLR = 404, ShortName = "Teach" });
+*          MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 405, ShortName = "Trade" });
+*          MasterSkill.Add("Animal Lore", new ItemMasterSkill { SortLR = 406, ShortName = "Animal" });
+*          MasterSkill.Add("Percussions", new ItemMasterSkill { SortLR = 407, ShortName = "Percuss" });
+*          MasterSkill.Add("Strings", new ItemMasterSkill { SortLR = 408, ShortName = "Strings" });
+*          MasterSkill.Add("Winds", new ItemMasterSkill { SortLR = 409, ShortName = "Winds" });
+*          MasterSkill.Add("Vocals", new ItemMasterSkill { SortLR = 410, ShortName = "Vocals" });
+*          MasterSkill.Add("Astrology", new ItemMasterSkill { SortLR = 411, ShortName = "Astro" });
+*          MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 412, ShortName = "Empathy" });
+*          MasterSkill.Add("Thanatology", new ItemMasterSkill { SortLR = 413, ShortName = "Than" });
+*/
 
-
-            MasterMindState = new Hashtable(12);
+            MasterMindState = new Hashtable(MAX_MINDSTATE);
             MasterMindState.Add("clear", 0);
             MasterMindState.Add("fluid", 1);
             MasterMindState.Add("murky", 2);
@@ -291,7 +315,7 @@ namespace EXPTracker
             MasterMindState.Add("frozen", 10);
             MasterMindState.Add("very frozen", 11);
 
-            MasterLearnRate = new Hashtable(35);
+            MasterLearnRate = new Hashtable(MAX_LEARNRATE);
             MasterLearnRate.Add("clear", 0);
             MasterLearnRate.Add("dabbling", 1);
             MasterLearnRate.Add("perusing", 2);
@@ -463,8 +487,11 @@ namespace EXPTracker
                         else if (Text.StartsWith("Time Development Points:"))
                         {
                             _TDP = Convert.ToInt32(Text.Substring(24, Text.IndexOf("Favors") - 24).Trim());
-                            if (_startTDP == -1)
+                            if (_trackingTDP == false)
+                            {
                                 _startTDP = _TDP;
+                                _trackingTDP = true;
+                            }
                         }
                         //string for sleeping
                         else if (Text.StartsWith("You are relaxed and your mind has entered a state of rest."))
@@ -821,7 +848,7 @@ namespace EXPTracker
 
                 //Outputs name of skill (short or normal) & ranks
                 if (_host.get_Variable("ExpTracker.ShortNames") == "1")
-                    skill.output = String.Format("{0,7:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                    skill.output = String.Format("{0,8:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 else
                     skill.output = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 //Outputs Learning Rate NAME if set to
@@ -1027,7 +1054,7 @@ namespace EXPTracker
                         string tdp = "";
                         string asleep = "";
 
-                        if (_TDP >= 0)
+                        if (_trackingTDP)
                         {
                             tdp = ";#echo >Experience TDPs: " + _TDP;
 
@@ -1156,8 +1183,9 @@ namespace EXPTracker
         public void ResetTracking()
         {
             //Reset TDP tracking
-            _TDP = -1;
-            _startTDP = -1;
+            _TDP = 0;
+            _startTDP = 0;
+            _trackingTDP = false;
 
             //Reset "Tracking Since"
             _startTime = DateTime.Now;
@@ -1182,8 +1210,9 @@ namespace EXPTracker
         public void ClearTracking()
         {
             //Reset TDP tracking
-            _TDP = -1;
-            _startTDP = -1;
+            _TDP = 0;
+            _startTDP = 0;
+            _trackingTDP = false;
 
             //Reset "Tracking Since"
             _startTime = DateTime.Now;
@@ -1198,8 +1227,9 @@ namespace EXPTracker
         }
         public void ResetTDP()
         {
-            _TDP = -1;
-            _startTDP = -1;
+            _TDP = 0;
+            _startTDP = 0;
+            _trackingTDP = false;
 
             _host.SendText("#echo");
             _host.SendText("#echo TDP tracking reset");
