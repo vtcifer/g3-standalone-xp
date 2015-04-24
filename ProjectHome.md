@@ -1,0 +1,1 @@
+Plugin for the Genie3 FE (www.genieclient.com).  It tracks Experience via the XML and Plain ASCII output of DragonRealms.  Also can report on ranks gained since the plugin was started, as well as emulate the Experience Window of the SF FrontEnd
