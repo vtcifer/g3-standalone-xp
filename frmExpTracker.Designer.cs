@@ -35,30 +35,26 @@
             this.btnCancel = new System.Windows.Forms.Button();
             this.txtRankGained = new System.Windows.Forms.TextBox();
             this.txtLearned = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
+            this.lblRankColor = new System.Windows.Forms.Label();
+            this.lblFreshColor = new System.Windows.Forms.Label();
             this.btnRankGained = new System.Windows.Forms.Button();
             this.lblRankGained = new System.Windows.Forms.Label();
             this.lblLearned = new System.Windows.Forms.Label();
             this.btnLearned = new System.Windows.Forms.Button();
             this.lblNormal = new System.Windows.Forms.Label();
             this.btnNormal = new System.Windows.Forms.Button();
-            this.label4 = new System.Windows.Forms.Label();
+            this.lblNormalColor = new System.Windows.Forms.Label();
             this.txtNormal = new System.Windows.Forms.TextBox();
             this.cbLearningRateNumber = new System.Windows.Forms.CheckBox();
             this.cbLearningRate = new System.Windows.Forms.CheckBox();
-            this.comboSort = new System.Windows.Forms.ComboBox();
+            this.comboExpSort = new System.Windows.Forms.ComboBox();
             this.lblSort = new System.Windows.Forms.Label();
             this.cbTrackSleep = new System.Windows.Forms.CheckBox();
             this.cbEchoSleep = new System.Windows.Forms.CheckBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.txtEcho = new System.Windows.Forms.TextBox();
             this.cbShort = new System.Windows.Forms.CheckBox();
             this.cbPersistent = new System.Windows.Forms.CheckBox();
-            this.chkDisplayMind = new System.Windows.Forms.CheckBox();
-            this.chkCountMind = new System.Windows.Forms.CheckBox();
-            this.txtDisplayMind = new System.Windows.Forms.TextBox();
-            this.txtCountMind = new System.Windows.Forms.TextBox();
+            this.lblReportSort = new System.Windows.Forms.Label();
+            this.comboReportSort = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // cbEnable
@@ -75,7 +71,7 @@
             // cbRankGain
             // 
             this.cbRankGain.AutoSize = true;
-            this.cbRankGain.Location = new System.Drawing.Point(32, 31);
+            this.cbRankGain.Location = new System.Drawing.Point(32, 32);
             this.cbRankGain.Name = "cbRankGain";
             this.cbRankGain.Size = new System.Drawing.Size(101, 17);
             this.cbRankGain.TabIndex = 2;
@@ -85,7 +81,7 @@
             // cbGagExp
             // 
             this.cbGagExp.AutoSize = true;
-            this.cbGagExp.Location = new System.Drawing.Point(32, 165);
+            this.cbGagExp.Location = new System.Drawing.Point(32, 150);
             this.cbGagExp.Name = "cbGagExp";
             this.cbGagExp.Size = new System.Drawing.Size(180, 17);
             this.cbGagExp.TabIndex = 8;
@@ -94,62 +90,62 @@
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(211, 276);
+            this.btnOk.Location = new System.Drawing.Point(211, 230);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
-            this.btnOk.TabIndex = 22;
+            this.btnOk.TabIndex = 19;
             this.btnOk.Text = "Ok";
             this.btnOk.UseVisualStyleBackColor = true;
             this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(301, 276);
+            this.btnCancel.Location = new System.Drawing.Point(301, 230);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
-            this.btnCancel.TabIndex = 23;
+            this.btnCancel.TabIndex = 20;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
             // txtRankGained
             // 
-            this.txtRankGained.Location = new System.Drawing.Point(311, 167);
+            this.txtRankGained.Location = new System.Drawing.Point(311, 149);
             this.txtRankGained.Name = "txtRankGained";
             this.txtRankGained.Size = new System.Drawing.Size(100, 20);
-            this.txtRankGained.TabIndex = 18;
+            this.txtRankGained.TabIndex = 15;
             // 
             // txtLearned
             // 
-            this.txtLearned.Location = new System.Drawing.Point(310, 220);
+            this.txtLearned.Location = new System.Drawing.Point(310, 192);
             this.txtLearned.Name = "txtLearned";
             this.txtLearned.Size = new System.Drawing.Size(100, 20);
-            this.txtLearned.TabIndex = 20;
+            this.txtLearned.TabIndex = 17;
             // 
-            // label1
+            // lblRankColor
             // 
-            this.label1.Location = new System.Drawing.Point(311, 148);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(255, 16);
-            this.label1.TabIndex = 9;
-            this.label1.Text = "Gained rank color";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.lblRankColor.Location = new System.Drawing.Point(311, 130);
+            this.lblRankColor.Name = "lblRankColor";
+            this.lblRankColor.Size = new System.Drawing.Size(255, 16);
+            this.lblRankColor.TabIndex = 9;
+            this.lblRankColor.Text = "Gained rank color";
+            this.lblRankColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // label2
+            // lblFreshColor
             // 
-            this.label2.Location = new System.Drawing.Point(311, 201);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(255, 19);
-            this.label2.TabIndex = 10;
-            this.label2.Text = "Fresh experience color";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.lblFreshColor.Location = new System.Drawing.Point(311, 173);
+            this.lblFreshColor.Name = "lblFreshColor";
+            this.lblFreshColor.Size = new System.Drawing.Size(255, 19);
+            this.lblFreshColor.TabIndex = 10;
+            this.lblFreshColor.Text = "Fresh experience color";
+            this.lblFreshColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // btnRankGained
             // 
-            this.btnRankGained.Location = new System.Drawing.Point(505, 167);
+            this.btnRankGained.Location = new System.Drawing.Point(505, 149);
             this.btnRankGained.Name = "btnRankGained";
             this.btnRankGained.Size = new System.Drawing.Size(61, 22);
-            this.btnRankGained.TabIndex = 19;
+            this.btnRankGained.TabIndex = 16;
             this.btnRankGained.Text = "Color...";
             this.btnRankGained.UseVisualStyleBackColor = true;
             this.btnRankGained.Click += new System.EventHandler(this.btnRankGained_Click);
@@ -159,7 +155,7 @@
             this.lblRankGained.BackColor = System.Drawing.Color.Black;
             this.lblRankGained.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblRankGained.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblRankGained.Location = new System.Drawing.Point(416, 167);
+            this.lblRankGained.Location = new System.Drawing.Point(416, 149);
             this.lblRankGained.Name = "lblRankGained";
             this.lblRankGained.Size = new System.Drawing.Size(83, 20);
             this.lblRankGained.TabIndex = 12;
@@ -171,7 +167,7 @@
             this.lblLearned.BackColor = System.Drawing.Color.Black;
             this.lblLearned.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblLearned.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblLearned.Location = new System.Drawing.Point(416, 220);
+            this.lblLearned.Location = new System.Drawing.Point(416, 192);
             this.lblLearned.Name = "lblLearned";
             this.lblLearned.Size = new System.Drawing.Size(83, 20);
             this.lblLearned.TabIndex = 13;
@@ -180,10 +176,10 @@
             // 
             // btnLearned
             // 
-            this.btnLearned.Location = new System.Drawing.Point(505, 220);
+            this.btnLearned.Location = new System.Drawing.Point(505, 192);
             this.btnLearned.Name = "btnLearned";
             this.btnLearned.Size = new System.Drawing.Size(61, 22);
-            this.btnLearned.TabIndex = 21;
+            this.btnLearned.TabIndex = 18;
             this.btnLearned.Text = "Color...";
             this.btnLearned.UseVisualStyleBackColor = true;
             this.btnLearned.Click += new System.EventHandler(this.btnLearned_Click);
@@ -193,7 +189,7 @@
             this.lblNormal.BackColor = System.Drawing.Color.Black;
             this.lblNormal.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNormal.ForeColor = System.Drawing.Color.WhiteSmoke;
-            this.lblNormal.Location = new System.Drawing.Point(416, 120);
+            this.lblNormal.Location = new System.Drawing.Point(416, 106);
             this.lblNormal.Name = "lblNormal";
             this.lblNormal.Size = new System.Drawing.Size(83, 20);
             this.lblNormal.TabIndex = 18;
@@ -202,34 +198,34 @@
             // 
             // btnNormal
             // 
-            this.btnNormal.Location = new System.Drawing.Point(505, 120);
+            this.btnNormal.Location = new System.Drawing.Point(505, 106);
             this.btnNormal.Name = "btnNormal";
             this.btnNormal.Size = new System.Drawing.Size(61, 22);
-            this.btnNormal.TabIndex = 17;
+            this.btnNormal.TabIndex = 14;
             this.btnNormal.Text = "Color...";
             this.btnNormal.UseVisualStyleBackColor = true;
             this.btnNormal.Click += new System.EventHandler(this.btnNormal_Click);
             // 
-            // label4
+            // lblNormalColor
             // 
-            this.label4.Location = new System.Drawing.Point(308, 104);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(258, 13);
-            this.label4.TabIndex = 16;
-            this.label4.Text = "Normal color";
-            this.label4.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            this.lblNormalColor.Location = new System.Drawing.Point(308, 90);
+            this.lblNormalColor.Name = "lblNormalColor";
+            this.lblNormalColor.Size = new System.Drawing.Size(258, 13);
+            this.lblNormalColor.TabIndex = 16;
+            this.lblNormalColor.Text = "Normal color";
+            this.lblNormalColor.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
             // txtNormal
             // 
-            this.txtNormal.Location = new System.Drawing.Point(311, 120);
+            this.txtNormal.Location = new System.Drawing.Point(311, 106);
             this.txtNormal.Name = "txtNormal";
             this.txtNormal.Size = new System.Drawing.Size(100, 20);
-            this.txtNormal.TabIndex = 16;
+            this.txtNormal.TabIndex = 13;
             // 
             // cbLearningRateNumber
             // 
             this.cbLearningRateNumber.AutoSize = true;
-            this.cbLearningRateNumber.Location = new System.Drawing.Point(32, 77);
+            this.cbLearningRateNumber.Location = new System.Drawing.Point(32, 80);
             this.cbLearningRateNumber.Name = "cbLearningRateNumber";
             this.cbLearningRateNumber.Size = new System.Drawing.Size(216, 17);
             this.cbLearningRateNumber.TabIndex = 4;
@@ -239,47 +235,47 @@
             // cbLearningRate
             // 
             this.cbLearningRate.AutoSize = true;
-            this.cbLearningRate.Location = new System.Drawing.Point(32, 54);
+            this.cbLearningRate.Location = new System.Drawing.Point(32, 56);
             this.cbLearningRate.Name = "cbLearningRate";
             this.cbLearningRate.Size = new System.Drawing.Size(154, 17);
             this.cbLearningRate.TabIndex = 3;
             this.cbLearningRate.Text = "Show LearningRate names";
             this.cbLearningRate.UseVisualStyleBackColor = true;
             // 
-            // comboSort
+            // comboExpSort
             // 
-            this.comboSort.AutoCompleteCustomSource.AddRange(new string[] {
+            this.comboExpSort.AutoCompleteCustomSource.AddRange(new string[] {
             "A to Z",
             "Left to Right",
             "Learning Rate",
             "Learning Rate Reverse"});
-            this.comboSort.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
-            this.comboSort.FormattingEnabled = true;
-            this.comboSort.Items.AddRange(new object[] {
+            this.comboExpSort.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.comboExpSort.FormattingEnabled = true;
+            this.comboExpSort.Items.AddRange(new object[] {
             "A to Z",
             "Left to Right",
             "Learning Rate",
             "Learning Rate Reverse"});
-            this.comboSort.Location = new System.Drawing.Point(370, 29);
-            this.comboSort.MaxDropDownItems = 3;
-            this.comboSort.Name = "comboSort";
-            this.comboSort.Size = new System.Drawing.Size(196, 21);
-            this.comboSort.TabIndex = 11;
-            this.comboSort.Text = "A to Z";
+            this.comboExpSort.Location = new System.Drawing.Point(399, 32);
+            this.comboExpSort.MaxDropDownItems = 3;
+            this.comboExpSort.Name = "comboExpSort";
+            this.comboExpSort.Size = new System.Drawing.Size(167, 21);
+            this.comboExpSort.TabIndex = 11;
+            this.comboExpSort.Text = "A to Z";
             // 
             // lblSort
             // 
             this.lblSort.AutoSize = true;
             this.lblSort.Location = new System.Drawing.Point(311, 32);
             this.lblSort.Name = "lblSort";
-            this.lblSort.Size = new System.Drawing.Size(52, 13);
+            this.lblSort.Size = new System.Drawing.Size(85, 13);
             this.lblSort.TabIndex = 22;
-            this.lblSort.Text = "Sort type:";
+            this.lblSort.Text = "Experience Sort:";
             // 
             // cbTrackSleep
             // 
             this.cbTrackSleep.AutoSize = true;
-            this.cbTrackSleep.Location = new System.Drawing.Point(32, 99);
+            this.cbTrackSleep.Location = new System.Drawing.Point(32, 104);
             this.cbTrackSleep.Name = "cbTrackSleep";
             this.cbTrackSleep.Size = new System.Drawing.Size(96, 17);
             this.cbTrackSleep.TabIndex = 5;
@@ -290,34 +286,17 @@
             // cbEchoSleep
             // 
             this.cbEchoSleep.AutoSize = true;
-            this.cbEchoSleep.Location = new System.Drawing.Point(40, 122);
+            this.cbEchoSleep.Location = new System.Drawing.Point(40, 126);
             this.cbEchoSleep.Name = "cbEchoSleep";
             this.cbEchoSleep.Size = new System.Drawing.Size(161, 17);
             this.cbEchoSleep.TabIndex = 6;
             this.cbEchoSleep.Text = "Echo to Experience Window";
             this.cbEchoSleep.UseVisualStyleBackColor = true;
-            this.cbEchoSleep.CheckedChanged += new System.EventHandler(this.cbEchoSleep_CheckedChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(36, 142);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(70, 13);
-            this.label3.TabIndex = 25;
-            this.label3.Text = "Text to echo:";
-            // 
-            // txtEcho
-            // 
-            this.txtEcho.Location = new System.Drawing.Point(113, 139);
-            this.txtEcho.Name = "txtEcho";
-            this.txtEcho.Size = new System.Drawing.Size(153, 20);
-            this.txtEcho.TabIndex = 7;
             // 
             // cbShort
             // 
             this.cbShort.AutoSize = true;
-            this.cbShort.Location = new System.Drawing.Point(32, 189);
+            this.cbShort.Location = new System.Drawing.Point(32, 174);
             this.cbShort.Name = "cbShort";
             this.cbShort.Size = new System.Drawing.Size(218, 17);
             this.cbShort.TabIndex = 9;
@@ -327,77 +306,68 @@
             // cbPersistent
             // 
             this.cbPersistent.AutoSize = true;
-            this.cbPersistent.Location = new System.Drawing.Point(32, 213);
+            this.cbPersistent.Location = new System.Drawing.Point(32, 198);
             this.cbPersistent.Name = "cbPersistent";
             this.cbPersistent.Size = new System.Drawing.Size(204, 17);
             this.cbPersistent.TabIndex = 10;
             this.cbPersistent.Text = "Make Experience Variables Persistent";
             this.cbPersistent.UseVisualStyleBackColor = true;
-            this.cbPersistent.CheckedChanged += new System.EventHandler(this.cbPersistent_CheckedChanged);
             // 
-            // chkDisplayMind
+            // lblReportSort
             // 
-            this.chkDisplayMind.AutoSize = true;
-            this.chkDisplayMind.Location = new System.Drawing.Point(314, 54);
-            this.chkDisplayMind.Name = "chkDisplayMind";
-            this.chkDisplayMind.Size = new System.Drawing.Size(166, 17);
-            this.chkDisplayMind.TabIndex = 12;
-            this.chkDisplayMind.Text = "Only display above mindstate:";
-            this.chkDisplayMind.UseVisualStyleBackColor = true;
+            this.lblReportSort.AutoSize = true;
+            this.lblReportSort.Location = new System.Drawing.Point(311, 61);
+            this.lblReportSort.Name = "lblReportSort";
+            this.lblReportSort.Size = new System.Drawing.Size(64, 13);
+            this.lblReportSort.TabIndex = 26;
+            this.lblReportSort.Text = "Report Sort:";
             // 
-            // chkCountMind
+            // comboReportSort
             // 
-            this.chkCountMind.AutoSize = true;
-            this.chkCountMind.Location = new System.Drawing.Point(314, 77);
-            this.chkCountMind.Name = "chkCountMind";
-            this.chkCountMind.Size = new System.Drawing.Size(161, 17);
-            this.chkCountMind.TabIndex = 14;
-            this.chkCountMind.Text = "Only count above mindstate:";
-            this.chkCountMind.UseVisualStyleBackColor = true;
-            // 
-            // txtDisplayMind
-            // 
-            this.txtDisplayMind.Location = new System.Drawing.Point(484, 51);
-            this.txtDisplayMind.Name = "txtDisplayMind";
-            this.txtDisplayMind.Size = new System.Drawing.Size(82, 20);
-            this.txtDisplayMind.TabIndex = 13;
-            // 
-            // txtCountMind
-            // 
-            this.txtCountMind.Location = new System.Drawing.Point(484, 74);
-            this.txtCountMind.Name = "txtCountMind";
-            this.txtCountMind.Size = new System.Drawing.Size(82, 20);
-            this.txtCountMind.TabIndex = 15;
+            this.comboReportSort.AutoCompleteCustomSource.AddRange(new string[] {
+            "A to Z",
+            "Left to Right",
+            "Learning Rate",
+            "Learning Rate Reverse"});
+            this.comboReportSort.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.comboReportSort.FormattingEnabled = true;
+            this.comboReportSort.Items.AddRange(new object[] {
+            "A to Z",
+            "Left to Right",
+            "Learning Rate",
+            "Learning Rate Reverse"});
+            this.comboReportSort.Location = new System.Drawing.Point(399, 61);
+            this.comboReportSort.MaxDropDownItems = 3;
+            this.comboReportSort.Name = "comboReportSort";
+            this.comboReportSort.Size = new System.Drawing.Size(166, 21);
+            this.comboReportSort.TabIndex = 12;
+            this.comboReportSort.Text = "A to Z";
             // 
             // frmEXPTracker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(585, 309);
-            this.Controls.Add(this.txtCountMind);
-            this.Controls.Add(this.txtDisplayMind);
-            this.Controls.Add(this.chkCountMind);
-            this.Controls.Add(this.chkDisplayMind);
+            this.ClientSize = new System.Drawing.Size(585, 280);
+            this.Controls.Add(this.comboReportSort);
+            this.Controls.Add(this.lblReportSort);
             this.Controls.Add(this.cbPersistent);
             this.Controls.Add(this.cbShort);
-            this.Controls.Add(this.txtEcho);
-            this.Controls.Add(this.label3);
             this.Controls.Add(this.cbEchoSleep);
             this.Controls.Add(this.cbTrackSleep);
             this.Controls.Add(this.lblSort);
-            this.Controls.Add(this.comboSort);
+            this.Controls.Add(this.comboExpSort);
             this.Controls.Add(this.cbLearningRate);
             this.Controls.Add(this.cbLearningRateNumber);
             this.Controls.Add(this.lblNormal);
             this.Controls.Add(this.btnNormal);
-            this.Controls.Add(this.label4);
+            this.Controls.Add(this.lblNormalColor);
             this.Controls.Add(this.txtNormal);
             this.Controls.Add(this.btnLearned);
             this.Controls.Add(this.lblLearned);
             this.Controls.Add(this.lblRankGained);
             this.Controls.Add(this.btnRankGained);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.label1);
+            this.Controls.Add(this.lblFreshColor);
+            this.Controls.Add(this.lblRankColor);
             this.Controls.Add(this.txtLearned);
             this.Controls.Add(this.txtRankGained);
             this.Controls.Add(this.btnCancel);
@@ -420,31 +390,27 @@
         public System.Windows.Forms.CheckBox cbEnable;
         public System.Windows.Forms.CheckBox cbRankGain;
         public System.Windows.Forms.CheckBox cbGagExp;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label lblRankColor;
         private System.Windows.Forms.Button btnRankGained;
         private System.Windows.Forms.Label lblRankGained;
         private System.Windows.Forms.Label lblLearned;
         private System.Windows.Forms.Button btnLearned;
         private System.Windows.Forms.Label lblNormal;
         private System.Windows.Forms.Button btnNormal;
-        public System.Windows.Forms.Label label4;
+        public System.Windows.Forms.Label lblNormalColor;
         public System.Windows.Forms.TextBox txtNormal;
         public System.Windows.Forms.TextBox txtRankGained;
-        protected System.Windows.Forms.Label label2;
+        protected System.Windows.Forms.Label lblFreshColor;
         public System.Windows.Forms.TextBox txtLearned;
         public System.Windows.Forms.CheckBox cbLearningRateNumber;
         public System.Windows.Forms.CheckBox cbLearningRate;
         private System.Windows.Forms.Label lblSort;
-        public System.Windows.Forms.ComboBox comboSort;
-        private System.Windows.Forms.Label label3;
-        public System.Windows.Forms.TextBox txtEcho;
+        public System.Windows.Forms.ComboBox comboExpSort;
         public System.Windows.Forms.CheckBox cbTrackSleep;
         public System.Windows.Forms.CheckBox cbEchoSleep;
         public System.Windows.Forms.CheckBox cbShort;
         public System.Windows.Forms.CheckBox cbPersistent;
-        public System.Windows.Forms.CheckBox chkDisplayMind;
-        public System.Windows.Forms.CheckBox chkCountMind;
-        public System.Windows.Forms.TextBox txtDisplayMind;
-        public System.Windows.Forms.TextBox txtCountMind;
+        private System.Windows.Forms.Label lblReportSort;
+        public System.Windows.Forms.ComboBox comboReportSort;
     }
 }

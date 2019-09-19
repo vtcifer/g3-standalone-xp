@@ -11,10 +11,10 @@ namespace EXPTracker
     {
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
-        string _NAME = "EXPTracker";
-        string _VERSION = "3.0.1";
-        string _AUTHOR = "VTCifer";
-        string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
+        readonly string _NAME = "EXPTracker";
+        readonly string _VERSION = "3.0.15";
+        readonly string _AUTHOR = "VTCifer";
+        readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
         public IHost _host;                             //Required for plugin
         public System.Windows.Forms.Form _parent;       //Required for plugin
@@ -23,7 +23,6 @@ namespace EXPTracker
 
         private const int MAX_SKILL = 69;                       //Total of 69 skills in game
         private const int MAX_LEARNRATE = 35;                   //Max Learning rates: 0 - 34
-        private const int MAX_MINDSTATE = 12;                   //Max Mindstates clear - frozen = 12
 
         private DateTime _startTime;                    //Used for TDP/Rank tracking to know how long tracking since
         private Hashtable _skillList = new Hashtable(); //Used for storing/sorting skills for display in Exp Win
@@ -32,18 +31,13 @@ namespace EXPTracker
         private bool _trackingTDP = false;              //Used for TDP tracking, this it to know when the plugin has gathered TDP info
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
-        private bool _sleeping = false;                 //Used for tracking if you are sleeping or not
-        private string _mindState = "";                 //Used for converting mindstate parsed to an integer for GenieVariable
+        private int _sleeping = -1;                     //Used for tracking if you are sleeping or not
         private bool _report = false;                   //Used for ParseText, to know if you are running a report
         private bool _ExpBrief = false;
         private bool _enabled = true;                   //Used for "Pausing" the tracker, so no new data is input.  Also used to disable from
                                                         //Plugins Window
 
-        //The following hashtables are used as alternatives to switch statments using string data
-        //which can have rather bad run time.  
-        //****************************//
-        // This is still experimental //
-        //****************************//
+        //The following hashtables are used as alternatives to switch statments using string data which can have rather bad run time.  
         private Hashtable MasterSkill;
         private class ItemMasterSkill
         {
@@ -51,7 +45,6 @@ namespace EXPTracker
             public string ShortName;
         }
 
-        private Hashtable MasterMindState;
         private Hashtable MasterLearnRate;
 
         //Class Skill
@@ -62,8 +55,8 @@ namespace EXPTracker
             public double rank = 0;                 //Rank of the skill
             public string learningRate = "clear";   //Text Learning rate
             public int iLearningRate = 0;           //Numerical Learning rate
-            public double startRank = 0;            //When Rank tracking enabled, this is starting rank calculated for
-            public bool rankGained = false;         //Used for displaying text in a specific color when rank gained
+            public double startRank = -1;           //When Rank tracking enabled, this is starting rank calculated for
+            public bool rankGained = false;         //Used for displaying text in a specific color when rank gained - currently broken from DR XML
             public bool learned = false;            //Used for displaying text in a specific color when bits are added to pool
             public int sortLR = 0;                  //Used for sorting As reading, Left to Right
             public string shortname = "";           //Used for short name display instead of long name
@@ -141,7 +134,6 @@ namespace EXPTracker
         }
 
         #endregion
-
         #region IPlugin Methods
 
         //Required for Plugin - Called on first load
@@ -163,43 +155,8 @@ namespace EXPTracker
             _skillList = new Hashtable(MAX_SKILL);
 
             //Set Genie Variables if not already set
-
-            if (_host.get_Variable("ExpTracker.Window") == "")
-                _host.SendText("#var ExpTracker.Window 0");
-
-            if (_host.get_Variable("ExpTracker.ShowRankGain") == "")
-                _host.SendText("#var ExpTracker.ShowRankGain 1");
-
-            if (_host.get_Variable("ExpTracker.LearningRate") == "")
-                _host.SendText("#var ExpTracker.LearningRate 1");
-
-            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "")
-                _host.SendText("#var ExpTracker.LearningRateNumber 0");
-
-            if (_host.get_Variable("ExpTracker.TrackSleep") == "")
-                _host.SendText("#var ExpTracker.TrackSleep 0");
-
-            if (_host.get_Variable("ExpTracker.EchoSleep") == "")
-                _host.SendText("#var ExpTracker.EchoSleep 0");
-
-            if (_host.get_Variable("ExpTracker.SortType") == "")
-                _host.SendText("#var ExpTracker.SortType 0");
-
-            if (_host.get_Variable("ExpTracker.GagExp") == "")
-                _host.SendText("#var ExpTracker.GagExp 0");
-
-            if (_host.get_Variable("ExpTracker.Color.Normal") == "")
-                _host.SendText("#var ExpTracker.Color.Normal WhiteSmoke");
-
-            if (_host.get_Variable("ExpTracker.Color.RankGained") == "")
-                _host.SendText("#var ExpTracker.Color.RankGained WhiteSmoke");
-
-            if (_host.get_Variable("ExpTracker.Color.Learned") == "")
-                _host.SendText("#var ExpTracker.Color.Learned WhiteSmoke");
-
-            if (_host.get_Variable("ExpTracker.ShortNames") == "")
-                _host.SendText("#var ExpTracker.ShortNames 0");
-
+            init_variables();
+           
             //create AND popluate the master hashtables
             //This in theory should front load processing time for when Genie loads
             //and speed up the time it takes to parse, and generate EXP window data.
@@ -213,7 +170,7 @@ namespace EXPTracker
             MasterSkill.Add("Brigandine", new ItemMasterSkill { SortLR = 3, ShortName = "Brigan" });
             MasterSkill.Add("Plate Armor", new ItemMasterSkill { SortLR = 4, ShortName = "Plate" });
             MasterSkill.Add("Defending", new ItemMasterSkill { SortLR = 5, ShortName = "Defend" });
-            MasterSkill.Add("Endurance", new ItemMasterSkill { SortLR = 6, ShortName = "Endure" });
+            MasterSkill.Add("Conviction", new ItemMasterSkill { SortLR = 6, ShortName = "Convict" });
             
             //Weapon Skills - 19
             MasterSkill.Add("Parry Ability", new ItemMasterSkill { SortLR = 100, ShortName = "Parry" });
@@ -284,36 +241,6 @@ namespace EXPTracker
             MasterSkill.Add("Bardic Lore", new ItemMasterSkill { SortLR = 410, ShortName = "BardLore" });
             MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 410, ShortName = "Empathy" });
             MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 410, ShortName = "Trading" });
-/*
-*          MasterSkill.Add("Scholarship", new ItemMasterSkill { SortLR = 400, ShortName = "Scholar" });
-*          MasterSkill.Add("Mechanical Lore", new ItemMasterSkill { SortLR = 401, ShortName = "Mech" });
-*          MasterSkill.Add("Musical Theory", new ItemMasterSkill { SortLR = 402, ShortName = "Music" });
-*          MasterSkill.Add("Appraisal", new ItemMasterSkill { SortLR = 403, ShortName = "App" });
-*          MasterSkill.Add("Teaching", new ItemMasterSkill { SortLR = 404, ShortName = "Teach" });
-*          MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 405, ShortName = "Trade" });
-*          MasterSkill.Add("Animal Lore", new ItemMasterSkill { SortLR = 406, ShortName = "Animal" });
-*          MasterSkill.Add("Percussions", new ItemMasterSkill { SortLR = 407, ShortName = "Percuss" });
-*          MasterSkill.Add("Strings", new ItemMasterSkill { SortLR = 408, ShortName = "Strings" });
-*          MasterSkill.Add("Winds", new ItemMasterSkill { SortLR = 409, ShortName = "Winds" });
-*          MasterSkill.Add("Vocals", new ItemMasterSkill { SortLR = 410, ShortName = "Vocals" });
-*          MasterSkill.Add("Astrology", new ItemMasterSkill { SortLR = 411, ShortName = "Astro" });
-*          MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 412, ShortName = "Empathy" });
-*          MasterSkill.Add("Thanatology", new ItemMasterSkill { SortLR = 413, ShortName = "Than" });
-*/
-
-            MasterMindState = new Hashtable(MAX_MINDSTATE);
-            MasterMindState.Add("clear", 0);
-            MasterMindState.Add("fluid", 1);
-            MasterMindState.Add("murky", 2);
-            MasterMindState.Add("very murky", 3);
-            MasterMindState.Add("thick", 4);
-            MasterMindState.Add("very thick", 5);
-            MasterMindState.Add("dense", 6);
-            MasterMindState.Add("very dense", 7);
-            MasterMindState.Add("stagnant", 8);
-            MasterMindState.Add("very stagnant", 9);
-            MasterMindState.Add("frozen", 10);
-            MasterMindState.Add("very frozen", 11);
 
             MasterLearnRate = new Hashtable(MAX_LEARNRATE);
             MasterLearnRate.Add("clear", 0);
@@ -438,7 +365,7 @@ namespace EXPTracker
         public string ParseText(string Text, string Window)
         {
             //check to see if tracker is paused or not.  If paused, just return the text back to Genie
-            if (_enabled == false)
+            if (!_enabled)
                 return Text;
 
             //Try/Catch used incase exception thrown, keeps plugin from being unloaded on bad data.
@@ -454,27 +381,38 @@ namespace EXPTracker
                             _parsing = false;
                             //The following are set up to only modify the ExpTracker.Sleeping Variable IF it needs to be changed, 
                             //since it forces a variable save
-                            if (_sleeping == true && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "1")
+                            if (_sleeping == 1 && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "1")
                             {
                                 _host.SendText("#var ExpTracker.Sleeping 1");
                                 _host.SendText("#var save");
                             }
-                            else if (_sleeping == false && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0")
+                            else if (_sleeping == 2 && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "2")
+                            {
+                                _host.SendText("#var ExpTracker.Sleeping 2");
+                                _host.SendText("#var save");
+                            }
+                            else if (_sleeping == 0 && _host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0")
                             {
                                 _host.SendText("#var ExpTracker.Sleeping 0");
                                 _host.SendText("#var save");
                             }
+
                             //once parsing is done, update the Experience Window
                             ShowExperience();
                         }
                         //If the line contains a % sign, it's a line with Experience info on it
                         else if (Text.Contains("%"))
                         {
-                            //Format of EXP strings:
+                            //Format of EXP strings, 2 per line for most, possibility for 1 for line
                             //  Power Perceive:    142 71% examining     (13/34)        Swimming:     93 61% scrutinizing  (17/34)
+                            //          Arcana:    194 23% thoughtful     (4/34)
+
+                            //Get index of the first %, and grab 15 characters after that, since that is the length of
+                            //the learning rate text.  Send it to PArseExperience (assuming, and clear learned/ranked)
                             int i = Text.IndexOf("%");
                             string part = Text.Substring(0, i + 15).Trim();
                             ParseExperience(part, 0);
+                            //Clear the just processed info from the string, and check for another set of experience data
                             part = Text.Substring(i + 23).Trim();
                             if (part.Contains("%"))
                             {
@@ -494,15 +432,18 @@ namespace EXPTracker
                             }
                         }
                         //string for sleeping
-                        else if (Text.StartsWith("You are relaxed and your mind has entered a state of rest."))
-                            _sleeping = true;
+                        else if (Text.StartsWith("You are relaxed and your mind has entered a light state of rest."))
+                            _sleeping = 1;
+                        else if (Text.StartsWith("You are relaxed and your mind has entered a deep state of rest."))
+                            _sleeping = 2;
+
                     }
                     //Signals the start of the Experience command response
                     else if (Text.StartsWith("Circle: "))
                     {
                         _parsing = true;
                         //Assume not sleeping, since there is no string when you're not.
-                        _sleeping = false;
+                        _sleeping = 0;
                     }
                     //Report has been finished generated (String is last line of exp output)
                     if (_report == true && Text.StartsWith("EXP HELP for more information"))
@@ -511,24 +452,28 @@ namespace EXPTracker
                         DisplayReport();
                     }
 
-                    //Following two the response strings for when you sleeping/awake
-                    if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "0" && (Text.StartsWith("You relax and allow your mind to enter a state of rest.") || Text.StartsWith("You are already resting your mind!")))
+                    //Following response strings are for when you sleeping/awake using sleep/awake commands
+                    if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "1" && Text.StartsWith("You relax and allow your mind to enter a state of rest") )
                     {
                         _host.SendText("#var ExpTracker.Sleeping 1");
                         _host.SendText("#var save");
                         _updateExp = true;
                     }
-                    else if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1" && (Text.StartsWith("You awaken from your reverie and begin to take in") || Text.StartsWith("But you are not sleeping!")))
+                    else if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "2" && Text.StartsWith("You draw deeper into rest, trying to destress"))
+                    {
+                        _host.SendText("#var ExpTracker.Sleeping 2");
+                        _host.SendText("#var save");
+                        _updateExp = true;
+
+                    }
+                    else if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0" && (Text.StartsWith("You awaken from your reverie and begin to take in the world around you") || Text.StartsWith("You stir yourself from the depths of relaxation and prepare for another day") || Text.StartsWith("But you are not sleeping!")))
                     {
                         _host.SendText("#var ExpTracker.Sleeping 0");
                         _host.SendText("#var save");
                         _updateExp = true;
                     }
 
-                    //gets mindstate, since there is no XML for that.
-                    if (Text.StartsWith("Overall state of mind:"))
-                        ParseMindState(Text.Substring(Text.IndexOf(":") + 1).Trim());
-                    else if (_parsing && _host.get_Variable("ExpTracker.GagExp") == "1")
+                    if (_parsing && ((_host.get_Variable("ExpTracker.GagExp") == "1") || (_report)) )
                         Text = "";
                 }
             }
@@ -548,9 +493,10 @@ namespace EXPTracker
             if (_enabled == false)
                 return;
             
-            //trigger update checks with XML prompt
+            //trigger output of updates with XML prompt
             if (XML.Contains("prompt"))
             {
+                //If it was detected that the exp brief toggle is used, turn it off and clear any garbage data in the plugin
                 if (_ExpBrief)
                 {
                     _host.SendText("#echo white,red The ExpBrief Toggle is not supported.");
@@ -561,7 +507,6 @@ namespace EXPTracker
                     _ExpBrief = false;
                 }
 
-                
                 //However, only ouptut the update, if there is an update
                 //for the exp window.
                 if (_updateExp == true)
@@ -573,26 +518,35 @@ namespace EXPTracker
 
             //XML data for Learning skills
             //<component id='exp Light Chain'><preset id='whisper'>     Light Chain:  282 22% mind lock    </preset></component>
+
             //XML data for pulsed skills
             //<component id='exp Hiding'>          Hiding:  398 33% rapt         </component>
+
+            //XML data for ranked skills (always does it 2x):
+            //<component id='exp Utility'><b>         Utility:  160 10% learning     </b></component>
+            //<component id='exp Utility'>         Utility:  160 10% learning     </component>
+
             //XML Data for plused to clear skills
             //<component id='exp Climbing'></component>
+
             //XML Data for skill when the unsupported ExpBrief Toggle is used:
             //<component id='exp Foraging'><d cmd='skill Foraging'> Forage</d>:  402 65%  [ 9/34]</component>
 
 
-            //if (XML.Contains("component") && XML.Contains("exp "))
-            //Trying out possibly better String function
-            if(XML.StartsWith("<component id='exp "))
+            //Only care about exp window updates
+            if (XML.StartsWith("<component id='exp "))
             {
+                //If xml xml output has a bracket, using unsupported Exp Brief toggle, track that to turn off)
                 if ( XML.Contains("[") )
                 {
                     _ExpBrief = true;
                 }
-                XmlDocument doc = new XmlDocument();
 
+                //setup a new XML doc for easier iterating through nodes
+                XmlDocument doc = new XmlDocument();
                 doc.LoadXml("<doc>" + XML + "</doc>");
 
+                //create a list of the nodes
                 XmlNodeList xnl = doc.ChildNodes.Item(0).ChildNodes;
                 for (int i = 0; i < xnl.Count; i++)
                 {
@@ -648,7 +602,25 @@ namespace EXPTracker
         //              string Text:  The variable name in Genie that changed
         public void VariableChanged(string Variable)
         {
+            if (Variable.StartsWith("ExpTracker."))
+            {
+                if (Variable == "ExpTracker.Sleeping")
+                    return;
+                if (Variable == "ExpTracker.Window")
+                {
+                    if (_host.get_Variable("ExpTracker.Window") == "1")
+                    {
+                        _host.SendText("#window show Experience");
+                    }
+                    else if (_host.get_Variable("ExpTracker.Window") == "0")
+                    {
+                        _host.SendText("#window hide Experience");
+                    }
+                }
 
+                if (_host.get_Variable(Variable) == "")
+                    init_variables(true, Variable);
+            }
         }
 
         public void ParentClosing()
@@ -671,36 +643,49 @@ namespace EXPTracker
 
             //All the following code reads the ExpTracker Global variables
             //and sets the form to reflect the current setup.
-            form.txtNormal.Text = _host.get_Variable("ExpTracker.Color.Normal");
-            form.txtRankGained.Text = _host.get_Variable("ExpTracker.Color.RankGained");
-            form.txtLearned.Text = _host.get_Variable("ExpTracker.Color.Learned");
 
-            if (_host.get_Variable("ExpTracker.GagExp") == "1")
-                form.cbGagExp.Checked = true;
+            //Done in reverse order
+            form.txtLearned.Text = _host.get_Variable("ExpTracker.Color.Learned");
+            form.txtRankGained.Text = _host.get_Variable("ExpTracker.Color.RankGained");
+            form.txtNormal.Text = _host.get_Variable("ExpTracker.Color.Normal");
+
+            if (_host.get_Variable("ExpTracker.ReportType") == "1")
+                form.comboReportSort.Text = "Left to Right";
+            else if (_host.get_Variable("ExpTracker.ReportType") == "2")
+                form.comboReportSort.Text = "Learning Rate";
+            else if (_host.get_Variable("ExpTracker.ReportType") == "3")
+                form.comboReportSort.Text = "Learning Rate Reverse";
             else
-                form.cbGagExp.Checked = false;
+                form.comboReportSort.Text = "A to Z";
+
+            if (_host.get_Variable("ExpTracker.SortType") == "1")
+                form.comboExpSort.Text = "Left to Right";
+            else if (_host.get_Variable("ExpTracker.SortType") == "2")
+                form.comboExpSort.Text = "Learning Rate";
+            else if (_host.get_Variable("ExpTracker.SortType") == "3")
+                form.comboExpSort.Text = "Learning Rate Reverse";
+            else
+                form.comboExpSort.Text = "A to Z";
+
+            if (_host.get_Variable("ExpTracker.Persistent") == "1")
+                form.cbPersistent.Checked = true;
+            else
+                form.cbPersistent.Checked = false;
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "1")
                 form.cbShort.Checked = true;
             else
                 form.cbShort.Checked = false;
 
-            if (_host.get_Variable("ExpTracker.SortType") == "1")
-                form.comboSort.Text = "Left to Right";
-            else if (_host.get_Variable("ExpTracker.SortType") == "2")
-                form.comboSort.Text = "Learning Rate";
-            else if (_host.get_Variable("ExpTracker.SortType") == "3")
-                form.comboSort.Text = "Learning Rate Reverse";
+            if (_host.get_Variable("ExpTracker.GagExp") == "1")
+                form.cbGagExp.Checked = true;
             else
-                form.comboSort.Text = "A to Z";
-
-            form.txtEcho.Text = _host.get_Variable("ExpTracker.Echo");
+                form.cbGagExp.Checked = false;
 
             if (_host.get_Variable("ExpTracker.EchoSleep") == "1")
                 form.cbEchoSleep.Checked = true;
             else
                 form.cbEchoSleep.Checked = false;
-
             if (_host.get_Variable("ExpTracker.TrackSleep") == "1")
                 form.cbTrackSleep.Checked = true;
             else
@@ -725,30 +710,11 @@ namespace EXPTracker
                 form.cbEnable.Checked = true;
             else
                 form.cbEnable.Checked = false;
-
-            if (_host.get_Variable("ExpTracker.Persistent") == "1")
-                form.cbPersistent.Checked = true;
-            else
-                form.cbPersistent.Checked = false;
-
+            form.Text = "Experience Tracker v" + _VERSION;
             if (parent != null)
                 form.MdiParent = parent;
 
             form.Show();
-        }
-
-        //Parses Mindstate into 
-        //
-        //Parameters:
-        //              string text:  the p
-        private void ParseMindState(string text)
-        {
-            int mindState = 0;
-            _mindState = text;
-            if (MasterMindState.Contains(_mindState))
-                mindState = (int)MasterMindState[_mindState];
-
-            _host.set_Variable("MindState", mindState.ToString());
         }
 
         private int GetLearningRateInt(string skillRate)
@@ -759,42 +725,46 @@ namespace EXPTracker
                 return -1;
         }
 
+        //Helper function - called to extract data from experience line
+        //Parameters:
+        //              string line:    the string containing the exp data (from xml or game output)
+        //              int type:       If skill pulsed (0), learned (1) or ranked (2)
         private void ParseExperience(string line, int type)
         {
+            //Ensure using decimal point instead of decimal comma or other
             if (System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator != ".")
             {
                 System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
             }
 
-            if (line.StartsWith("Mind State"))
-            {
-                ParseMindState(line.Substring(12).Trim().ToLower());
-                return;
-            }
 
-            string name = "";
-
+            //Get skill name, which always precedes the ':'
             int i = line.IndexOf(":");
             if (i == -1) return;
-            name = line.Substring(0, i).Trim();
+            string name = line.Substring(0, i).Trim();
 
             // Skip lines with broke names - Conny
             if (name.Contains("(")) return;
 
+            //get learnirng rate, which always is after '%'
+            //if no %, nothing to do
             int j = line.IndexOf("%");
             if (j == -1) return;
             string learningRate = "";
-            if (line.Contains("("))
+            if (line.Contains("("))     //parsed text will contain a (nn/34) after the learning rate
                 learningRate = line.Substring(j + 1, line.IndexOf("(") - j - 1).Trim();
-            else
+            else                        //parsed Xml will not contain a (nn/34), and thus will just have whitespace after the learning rate
                 learningRate = line.Substring(j + 1).Trim();
-
+            //rank data will be between the ":" and the "%"
             string rank = line.Substring(i + 1, j - i - 1).Trim();
 
 
-
+            //as exp data from game doesn't use decimal point, but rank + %, change the space to decimal
             rank = rank.Replace(" ", System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
 
+            //I have no idea what this code does...so it's been dummied out for now
+            //Leaving in, just in case something unexpected breaks
+            /*
             int k = rank.IndexOf(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator);
             if (k > -1)
             {
@@ -803,7 +773,7 @@ namespace EXPTracker
                     rank = rank.Substring(0, k + 1) + rank.Substring(k + 2);
                 }
             }
-
+            */
             double dRank = Double.Parse(rank);
 
             int SortLR = 0;
@@ -832,7 +802,7 @@ namespace EXPTracker
                 skill.learningRate = learningRate;
                 skill.iLearningRate = GetLearningRateInt(learningRate);
                 skill.rank = dRank;
-                if (skill.startRank == 0)
+                if (skill.startRank == -1)
                     skill.startRank = dRank;
                 skill.learned = false;
                 skill.rankGained = false;
@@ -851,6 +821,8 @@ namespace EXPTracker
                     skill.output = String.Format("{0,8:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 else
                     skill.output = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                //Always use long name for prase output
+                skill.parseoutput = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 //Outputs Learning Rate NAME if set to
                 if (_host.get_Variable("ExpTracker.LearningRate") == "1")
                     skill.output += String.Format(" {0,-13}", skill.learningRate);
@@ -865,6 +837,7 @@ namespace EXPTracker
                     if (rankGain >= 0) skill.output += " +" + String.Format("{0:0.00}", rankGain);
                     else skill.output += " " + String.Format("{0:0.00}", rankGain);
                 }
+                skill.parseoutput = skill.output;
                 //Used for #echo >Window Options "   Text "
                 //to preserve white space
                 skill.output = " \"" + skill.output + "\"";
@@ -903,6 +876,8 @@ namespace EXPTracker
                     skill.output = String.Format("{0,7:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 else
                     skill.output = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
+                //Always use long name for prase output
+                skill.parseoutput = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 //Outputs Learning Rate NAME if set to
                 if (_host.get_Variable("ExpTracker.LearningRate") == "1")
                     skill.output += String.Format(" {0,-13}", skill.learningRate);
@@ -957,6 +932,7 @@ namespace EXPTracker
             {
                 skill = (Skill)_skillList[name];
                 skill.learningRate = "clear";
+                skill.iLearningRate = 0;
                 _skillList[name] = skill;
             }
             else
@@ -1008,8 +984,8 @@ namespace EXPTracker
                     foreach (DictionaryEntry sk in _skillList)
                     {
                         Skill skill = (Skill)sk.Value;
-                        //for those that aren't at "clear" learning rate (0/34 )
-                        if (skill.learningRate != "clear")
+                        //for those that aren't at "clear" learning rate (0/34)
+                        if (skill.iLearningRate > 0)
                         {
                             //add the skill + sort types to the list of items to be sorted
                             Sortskill sortSkill = new Sortskill
@@ -1021,14 +997,14 @@ namespace EXPTracker
                             sortList.Add(sortSkill);
                         }
                     }
-                    //Sort based on type of sort.  
-                    //1: Reading sort 
+                    //Sort based on type of sort.
+                    //1: Reading sort (based on game exp output)
                     if (_host.get_Variable("ExpTracker.SortType") == "1")
                         sortList.Sort(new MyComparerLR());
-                    //2: By Learning Rate
+                    //2: By Learning Rate (Low to High)
                     else if (_host.get_Variable("ExpTracker.SortType") == "2")
                         sortList.Sort(new MyComparerLearning());
-                    //3: By Learning Rate Reverse
+                    //3: By Learning Rate Reverse (High to Low)
                     else if (_host.get_Variable("ExpTracker.SortType") == "3")
                         sortList.Sort(new MyComparerLearningRev());
                     //0/Default: Alphabetical
@@ -1042,41 +1018,38 @@ namespace EXPTracker
                         //suspsend so it behaves as an update, not as a scrolling window
                         _host.SendText("#echo >Experience @suspend@");
 
-                        //only echo the items that are in the sortList (non-clear learning rate)
+                        //only echo the items that are in the sortList (learning rate > 0)
                         foreach (Sortskill item in sortList)
                         {
-                            //get the skill info from the hash table
+                            //get the skill info from the hash table, then echo it
                             Skill skill = (Skill)_skillList[item.name];
                             _host.SendText("#echo >Experience " + skill.output);
                         }
 
                         //tdp and sleep are blank in case there is no info for them to output
-                        string tdp = "";
                         string asleep = "";
+                        string tdp = "";
+
+                        if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.EchoSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") != "0")
+                            if (_host.get_Variable("ExpTracker.Sleeping") == "1")
+                                asleep = "#echo >Experience Lightly sleeping - no new exp.";
+                            else if (_host.get_Variable("ExpTracker.Sleeping") == "2")
+                                asleep = "echo >Experience Deeply sleeping - not draining.";
+                        if (asleep != "")
+                            _host.SendText(asleep);
 
                         if (_trackingTDP)
                         {
-                            tdp = ";#echo >Experience TDPs: " + _TDP;
+                            tdp = "#echo >Experience TDPs: " + _TDP;
 
                             if (_startTDP < _TDP)
                                 tdp = tdp + "  Gained: " + (_TDP - _startTDP);
+
                         }
-                        if (_host.get_Variable("ExpTracker.TrackSleep") == "1" && _host.get_Variable("ExpTracker.EchoSleep") == "1" && _host.get_Variable("ExpTracker.Sleeping") == "1")
-                            if (_host.get_Variable("ExpTracker.Echo") == "")
-                                asleep = ";#echo >Experience YOU ARE ASLEEP!";
-                            else
-                                asleep = ";#echo >Experience " + _host.get_Variable("ExpTracker.Echo");
-
+                        if (tdp != "")
+                            _host.SendText(tdp);
                         TimeSpan oTimeSpan = DateTime.Now - _startTime;
-
-                        //Short or long version of mindstate
-                        string mindstatetext = "";
-                        if (_host.get_Variable("ExpTracker.ShortNames") == "1")
-                            mindstatetext = "Mindstate: ";
-                        else
-                            mindstatetext = "Overall state of mind: ";
-
-                        _host.SendText("#echo >Experience " + mindstatetext + _mindState + asleep + tdp + ";#echo >Experience Last updated: $time;#echo >Experience Tracking for: " + FormatTimeSpan(oTimeSpan));
+                        _host.SendText("#echo >Experience Last updated: $time;#echo >Experience Tracking for: " + FormatTimeSpan(oTimeSpan));
                         //resume so the updates actually show
                         _host.SendText("#echo >Experience @resume@");
                     }
@@ -1143,7 +1116,7 @@ namespace EXPTracker
             {
                 Skill skill = (Skill)sk.Value;
                 //add the skill + sort types to the list of items to be sorted
-                if (skill.startRank - skill.rank != 0.0)
+                if (skill.startRank - skill.rank != 0.0 || skill.iLearningRate > 0 )
                 {
                     Sortskill sortSkill = new Sortskill
                     {
@@ -1156,29 +1129,30 @@ namespace EXPTracker
             }
             //Sort based on type of sort.  
             //1: Reading sort 
-            if (_host.get_Variable("ExpTracker.SortType") == "1")
+            if (_host.get_Variable("ExpTracker.ReportType") == "1")
                 sortList.Sort(new MyComparerLR());
             //2: By Learning Rate
-            else if (_host.get_Variable("ExpTracker.SortType") == "2")
+            else if (_host.get_Variable("ExpTracker.ReportType") == "2")
                 sortList.Sort(new MyComparerLearning());
             //3: By Learning Rate Reverse
-            else if (_host.get_Variable("ExpTracker.SortType") == "3")
+            else if (_host.get_Variable("ExpTracker.ReportType") == "3")
                 sortList.Sort(new MyComparerLearningRev());
             //0/Default: Alphabetical
             else
                 sortList.Sort(new MyComparer());
-
+            
             foreach (Sortskill item in sortList)
             {
                 //get the skill info from the hash table
                 Skill skill = (Skill)_skillList[item.name];
+                //_host.EchoText(item.name);
                 _host.SendText("#echo " + skill.output);
                 _host.SendText("#parse " + skill.parseoutput);
             }
         }
         #endregion
 
-        #region Helper functions - reset, clear
+        #region Helper functions - reset, clear, init_variables
 
         public void ResetTracking()
         {
@@ -1233,6 +1207,57 @@ namespace EXPTracker
 
             _host.SendText("#echo");
             _host.SendText("#echo TDP tracking reset");
+        }
+
+        public void init_variables(bool _echoinit = false, string variable = "")
+        {
+            if (_echoinit == true)
+                _host.EchoText("Missing variable (" + variable +") detected, attempting to reset to default.");
+
+            if (_host.get_Variable("ExpTracker.Window") == "")
+                _host.SendText("#var ExpTracker.Window 1");
+
+            if (_host.get_Variable("ExpTracker.ShowRankGain") == "")
+                _host.SendText("#var ExpTracker.ShowRankGain 1");
+
+            if (_host.get_Variable("ExpTracker.LearningRate") == "")
+                _host.SendText("#var ExpTracker.LearningRate 1");
+
+            if (_host.get_Variable("ExpTracker.LearningRateNumber") == "")
+                _host.SendText("#var ExpTracker.LearningRateNumber 1");
+
+            if (_host.get_Variable("ExpTracker.TrackSleep") == "")
+                _host.SendText("#var ExpTracker.TrackSleep 1");
+
+            if (_host.get_Variable("ExpTracker.EchoSleep") == "")
+                _host.SendText("#var ExpTracker.EchoSleep 1");
+
+            if (_host.get_Variable("ExpTracker.GagExp") == "")
+                _host.SendText("#var ExpTracker.GagExp 0");
+
+            if (_host.get_Variable("ExpTracker.ShortNames") == "")
+                _host.SendText("#var ExpTracker.ShortNames 0");
+
+            if (_host.get_Variable("ExpTracker.Persistent") == "")
+                _host.SendText("#var ExpTracker.Persistent 0");
+
+            if (_host.get_Variable("ExpTracker.SortType") == "")
+                _host.SendText("#var ExpTracker.SortType 1");
+
+            if (_host.get_Variable("ExpTracker.ReportType") == "")
+                _host.SendText("#var ExpTracker.ReportType 1");
+
+            if (_host.get_Variable("ExpTracker.Color.Normal") == "")
+                _host.SendText("#var ExpTracker.Color.Normal WhiteSmoke");
+
+            if (_host.get_Variable("ExpTracker.Color.RankGained") == "")
+                _host.SendText("#var ExpTracker.Color.RankGained Red");
+
+            if (_host.get_Variable("ExpTracker.Color.Learned") == "")
+                _host.SendText("#var ExpTracker.Color.Learned Aqua");
+
+            if (_echoinit == true)
+                _host.SendText("#var save");
         }
         #endregion
 
