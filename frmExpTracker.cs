@@ -45,19 +45,10 @@ namespace EXPTracker
                 _host.SendText("#var ExpTracker.TrackSleep 1");
             else
                 _host.SendText("#var ExpTracker.TrackSleep 0");
-
             if (cbEchoSleep.Checked == true)
                 _host.SendText("#var ExpTracker.EchoSleep 1");
             else
                 _host.SendText("#var ExpTracker.EchoSleep 0");
-            _host.SendText("#var {ExpTracker.Echo} {" + txtEcho.Text.Trim() + "}");
-            
-            if (comboSort.Text == "A to Z")
-                _host.SendText("#var ExpTracker.SortType 0");
-            else if (comboSort.Text == "Left to Right")
-                _host.SendText("#var ExpTracker.SortType 1");
-            else
-                _host.SendText("#var ExpTracker.SortType 2");
 
             if (cbGagExp.Checked == true)
                 _host.SendText("#var ExpTracker.GagExp 1");
@@ -69,9 +60,33 @@ namespace EXPTracker
             else
                 _host.SendText("#var ExpTracker.ShortNames 0");
 
-            _host.SendText("#var {ExpTracker.Color.RankGained} {" + txtRankGained.Text.Trim() + "}");
-            _host.SendText("#var {ExpTracker.Color.Learned} {" + txtLearned.Text.Trim() + "}");
-            _host.SendText("#var {ExpTracker.Color.Normal} {" + txtNormal.Text.Trim() + "}");
+            if (cbPersistent.Checked == true)
+                _host.SendText("#var ExpTracker.Persistent 1");
+            else
+                _host.SendText("#var ExpTracker.Persistent 0");
+
+
+            if (comboExpSort.Text == "A to Z")
+                _host.SendText("#var ExpTracker.SortType 0");
+            else if (comboExpSort.Text == "Left to Right")
+                _host.SendText("#var ExpTracker.SortType 1");
+            else if (comboExpSort.Text == "Learning Rate")
+                _host.SendText("#var ExpTracker.SortType 2");
+            else
+                _host.SendText("#var ExpTracker.SortType 3");
+
+            if (comboReportSort.Text == "A to Z")
+                _host.SendText("#var ExpTracker.ReportType 0");
+            else if (comboReportSort.Text == "Left to Right")
+                _host.SendText("#var ExpTracker.ReportType 1");
+            else if (comboReportSort.Text == "Learning Rate")
+                _host.SendText("#var ExpTracker.ReportType 2");
+            else
+                _host.SendText("#var ExpTracker.ReportType 3");
+
+            _host.SendText("#var {ExpTracker.Color.RankGained} {" + txtRankGained.Text + "}");
+            _host.SendText("#var {ExpTracker.Color.Learned} {" + txtLearned.Text + "}");
+            _host.SendText("#var {ExpTracker.Color.Normal} {" + txtNormal.Text + "}");
 
             _host.SendText("#var save");
 
@@ -171,45 +186,37 @@ namespace EXPTracker
                 cbRankGain.Enabled = true;
                 cbLearningRate.Enabled = true;
                 cbLearningRateNumber.Enabled = true;
-                
                 cbTrackSleep.Enabled = true;
                 if (cbTrackSleep.Checked == true)
-                {
                     cbEchoSleep.Enabled = true;
-                    if (cbEchoSleep.Checked == true)
-                        txtEcho.Enabled = true;
-                    else
-                        txtEcho.Enabled = false;
-                }
                 else
-                {
                     cbEchoSleep.Enabled = false;
-                    txtEcho.Enabled = false;
-                }
-                comboSort.Enabled = true;
                 cbGagExp.Enabled = true;
-                cbShort.Enabled = true; 
+                cbShort.Enabled = true;
+                cbPersistent.Enabled = true;
+
+                comboExpSort.Enabled = true;
+                comboReportSort.Enabled = true;
                 txtNormal.Enabled = true;
                 btnNormal.Enabled = true;
                 txtRankGained.Enabled = true;
                 btnRankGained.Enabled = true;
                 txtLearned.Enabled = true;
                 btnLearned.Enabled = true;
-
             }
             else
             {
                 cbRankGain.Enabled = false;
                 cbLearningRate.Enabled = false;
                 cbLearningRateNumber.Enabled = false;
-
                 cbTrackSleep.Enabled = false;
                 cbEchoSleep.Enabled = false;
-                txtEcho.Enabled = false;
-                
-                comboSort.Enabled = false;
                 cbGagExp.Enabled = false;
                 cbShort.Enabled = false;
+                cbPersistent.Enabled = false;
+
+                comboExpSort.Enabled = false;
+                comboReportSort.Enabled = false;
                 txtNormal.Enabled = false;
                 btnNormal.Enabled = false;
                 txtRankGained.Enabled = false;
@@ -222,27 +229,27 @@ namespace EXPTracker
         private void cbTrackSleep_CheckedChanged(object sender, EventArgs e)
         {
             if (cbTrackSleep.Checked == true)
-            {
                 cbEchoSleep.Enabled = true;
-                if (cbEchoSleep.Checked == true)
-                    txtEcho.Enabled = true;
-                else
-                    txtEcho.Enabled = false;
-            }
             else
-            {
                 cbEchoSleep.Enabled = false;
-                txtEcho.Enabled = false;
-            }
         }
-
+        /*
         private void cbEchoSleep_CheckedChanged(object sender, EventArgs e)
         {
-            if(cbEchoSleep.Checked == true)
-                txtEcho.Enabled = true;
-            else
-                txtEcho.Enabled = false;
-        }
 
+        }
+        */
+        /*
+        private void cbPersistent_CheckedChanged(object sender, EventArgs e)
+        {
+
+        }
+        */
+        /*
+        private void LblSort_Click(object sender, EventArgs e)
+        {
+
+        }
+        */
     }
 }
