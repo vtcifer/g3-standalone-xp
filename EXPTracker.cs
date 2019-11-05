@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.0.15";
+        readonly string _VERSION = "3.1.19";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -28,6 +28,8 @@ namespace EXPTracker
         private Hashtable _skillList = new Hashtable(); //Used for storing/sorting skills for display in Exp Win
         private int _TDP = 0;                           //Used for TDP tracking, this is current TDPs
         private int _startTDP = 0;                      //Used for TDP tracking, this is set when first checking
+        private int _RestedEXPStored = -1;              //Used for tracking rested experience.
+        private int _RestedExpUsable = -1;              //Used for tracking rested experience.
         private bool _trackingTDP = false;              //Used for TDP tracking, this it to know when the plugin has gathered TDP info
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
@@ -431,6 +433,15 @@ namespace EXPTracker
                                 _trackingTDP = true;
                             }
                         }
+                        //Get details of rested exp.  Stored, Usable, reset
+                        else if (Text.StartsWith("Rested EXP Stored: "))
+                        {
+                            //get details of rested exp
+                            //Rested EXP Stored: 5:50 hours Usable This Cycle: 5:27 hours Cycle Refreshes: 20:36 hours
+                            //Rested EXP Stored: 1:23 hour Usable This Cycle: 59 minutes Cycle Refreshes: 13:47 hours
+                            //Rested EXP Stored: 24 minutes  Usable This Cycle: 1 minute  Cycle Refreshes: 12:43 hours
+
+                        }
                         //string for sleeping
                         else if (Text.StartsWith("You are relaxed and your mind has entered a light state of rest."))
                             _sleeping = 1;
@@ -481,6 +492,8 @@ namespace EXPTracker
             {
                 _host.SendText("#echo >Debug \" " + ex.ToString() + "\"");
             }
+
+
             return Text;
         }
 
@@ -604,7 +617,7 @@ namespace EXPTracker
         {
             if (Variable.StartsWith("ExpTracker."))
             {
-                if (Variable == "ExpTracker.Sleeping")
+                if ((Variable == "ExpTracker.Sleeping") || (Variable == "ExpTracker.NextPulse"))
                     return;
                 if (Variable == "ExpTracker.Window")
                 {
@@ -620,6 +633,62 @@ namespace EXPTracker
 
                 if (_host.get_Variable(Variable) == "")
                     init_variables(true, Variable);
+            }
+            if (Variable == "gametime")
+            {
+
+                uint pulseOffset = Convert.ToUInt32(_host.get_Variable("gametime")) % 200;
+
+                if (pulseOffset > 192 || pulseOffset <= 12)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Missile_Mastery|Primary_Magic|Attunement|Arcana|Targeted_Magic|Augmentation")
+                        _host.set_Variable("ExpTracker.NextPulse", "Missile_Mastery|Primary_Magic|Attunement|Arcana|Targeted_Magic|Augmentation");
+                }
+                else if (pulseOffset > 172)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Staves|Polearms|Light_Thrown|Heavy_Thrown|Brawling|Offhand_Weapon|Melee_Mastery")
+                        _host.set_Variable("ExpTracker.NextPulse", "Staves|Polearms|Light_Thrown|Heavy_Thrown|Brawling|Offhand_Weapon|Melee_Mastery");
+                }
+                else if (pulseOffset > 152)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Small_Blunt|Large_Blunt|Twohanded_Blunt|Slings|Bow|Crossbow")
+                        _host.set_Variable("ExpTracker.NextPulse", "Small_Blunt|Large_Blunt|Twohanded_Blunt|Slings|Bow|Crossbow");
+                }
+                else if (pulseOffset > 132)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Parry_Ability|Small_Edged|Large_Edged|Twohanded_Edged")
+                        _host.set_Variable("ExpTracker.NextPulse", "Parry_Ability|Small_Edged|Large_Edged|Twohanded_Edged");
+                }
+                else if (pulseOffset > 112)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Shield_Usage|Light_Armor|Chain_Armor|Brigandine|Plate_Armor|Defending")
+                        _host.set_Variable("ExpTracker.NextPulse", "Shield_Usage|Light_Armor|Chain_Armor|Brigandine|Plate_Armor|Defending");
+                }
+                else if (pulseOffset > 92)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Performance|Tactics|Astrology|Empathy|Thanatology|Expertise|Summoning|Theurgy|Conviction")
+                        _host.set_Variable("ExpTracker.NextPulse", "Performance|Tactics|Astrology|Empathy|Thanatology|Expertise|Summoning|Theurgy|Conviction");
+                }
+                else if (pulseOffset > 72)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Forging|Engineering|Outfitting|Alchemy|Enchanting|Scholarship|Mechanical_Lore|Appraisal|Bardic_Lore|Trading")
+                        _host.set_Variable("ExpTracker.NextPulse", "Forging|Engineering|Outfitting|Alchemy|Enchanting|Scholarship|Mechanical_Lore|Appraisal|Bardic_Lore|Trading");
+                }
+                else if (pulseOffset > 52)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Skinning|Backstab")
+                        _host.set_Variable("ExpTracker.NextPulse", "Skinning|Backstab");
+                }
+                else if (pulseOffset > 32)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Stealth|Locksmithing|Thievery|First_Aid|Outdoorsmanship")
+                        _host.set_Variable("ExpTracker.NextPulse", "Stealth|Locksmithing|Thievery|First_Aid|Outdoorsmanship");
+                }
+                else if (pulseOffset > 12)
+                {
+                    if (_host.get_Variable("ExpTracker.NextPulse") != "Debilitation|Utility|Warding|Sorcery|Evasion|Athletics|Perception|Scouting")
+                        _host.set_Variable("ExpTracker.NextPulse", "Debilitation|Utility|Warding|Sorcery|Evasion|Athletics|Perception|Scouting");
+                }
             }
         }
 
@@ -1034,7 +1103,7 @@ namespace EXPTracker
                             if (_host.get_Variable("ExpTracker.Sleeping") == "1")
                                 asleep = "#echo >Experience Lightly sleeping - no new exp.";
                             else if (_host.get_Variable("ExpTracker.Sleeping") == "2")
-                                asleep = "echo >Experience Deeply sleeping - not draining.";
+                                asleep = "#echo >Experience Deeply sleeping - not draining.";
                         if (asleep != "")
                             _host.SendText(asleep);
 
@@ -1146,6 +1215,8 @@ namespace EXPTracker
                 //get the skill info from the hash table
                 Skill skill = (Skill)_skillList[item.name];
                 //_host.EchoText(item.name);
+                if (skill.output == "")
+                    continue;
                 _host.SendText("#echo " + skill.output);
                 _host.SendText("#parse " + skill.parseoutput);
             }
