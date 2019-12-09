@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.1.19";
+        readonly string _VERSION = "3.2.20";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -617,7 +617,7 @@ namespace EXPTracker
         {
             if (Variable.StartsWith("ExpTracker."))
             {
-                if ((Variable == "ExpTracker.Sleeping") || (Variable == "ExpTracker.NextPulse"))
+                if ((Variable == "ExpTracker.Sleeping") || (Variable == "ExpTracker.NextPulse")|| (Variable == "ExpTracker.LearningSkills"))
                     return;
                 if (Variable == "ExpTracker.Window")
                 {
@@ -629,6 +629,31 @@ namespace EXPTracker
                     {
                         _host.SendText("#window hide Experience");
                     }
+                }
+                else if (Variable == "ExpTracker.CountMinMindstate")
+                {
+                    int temp;
+                    try
+                    {
+                        temp = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
+                        if (temp < 0)
+                        {
+                            _host.EchoText("Variable ExpTracker.CountMinMindstate minimum value is 0.");
+                            _host.SendText("#var ExpTracker.CountMinMindstate 0");
+                        }
+                        else if (temp > 33)
+                        {
+                            _host.EchoText("Variable ExpTracker.CountMinMindstate maximum value is 33.");
+                            _host.SendText("#var ExpTracker.CountMinMindstate 33");
+                        }
+                    }
+                    catch
+                    {
+                        _host.EchoText("Variable ExpTracker.CountMinMindstate must be an integer.");
+                        _host.EchoText("Setting value to default of 0.");
+                        _host.SendText("#var ExpTracker.CountMinMindstate 0");
+                    }
+                    return;
                 }
 
                 if (_host.get_Variable(Variable) == "")
@@ -740,6 +765,26 @@ namespace EXPTracker
                 form.cbPersistent.Checked = true;
             else
                 form.cbPersistent.Checked = false;
+            int temp;
+            try
+            {
+                temp = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
+                if (temp < 0)
+                    form.updownMinMindstate.Value = 0;
+                else if (temp > 33)
+                    form.updownMinMindstate.Value = 33;
+                else
+                    form.updownMinMindstate.Value = temp;
+            }
+            catch
+            {
+                form.updownMinMindstate.Value = 0;
+            }
+            if (_host.get_Variable("ExpTracker.CountSkills") == "1")
+                form.cbCountSkills.Checked = true;
+            else
+                form.cbCountSkills.Checked = false;
+            
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "1")
                 form.cbShort.Checked = true;
@@ -1048,6 +1093,9 @@ namespace EXPTracker
                 {
                     //list for sorting
                     ArrayList sortList = new ArrayList();
+                    int SkillCount = 0;
+                    int CountMinMindstate = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
+
 
                     //iterate through the list of all skills
                     foreach (DictionaryEntry sk in _skillList)
@@ -1056,6 +1104,9 @@ namespace EXPTracker
                         //for those that aren't at "clear" learning rate (0/34)
                         if (skill.iLearningRate > 0)
                         {
+                            if (_host.get_Variable("ExpTracker.CountSkills") == "1" && skill.iLearningRate > CountMinMindstate)
+                                SkillCount++;
+
                             //add the skill + sort types to the list of items to be sorted
                             Sortskill sortSkill = new Sortskill
                             {
@@ -1093,6 +1144,12 @@ namespace EXPTracker
                             //get the skill info from the hash table, then echo it
                             Skill skill = (Skill)_skillList[item.name];
                             _host.SendText("#echo >Experience " + skill.output);
+                        }
+
+                        if (_host.get_Variable("ExpTracker.CountSkills") == "1")
+                        { 
+                            _host.SendText("#echo >Experience Learning Skills: " + SkillCount.ToString());
+                            _host.set_Variable("ExpTracker.LearningSkills", SkillCount.ToString());
                         }
 
                         //tdp and sleep are blank in case there is no info for them to output
@@ -1283,7 +1340,7 @@ namespace EXPTracker
         public void init_variables(bool _echoinit = false, string variable = "")
         {
             if (_echoinit == true)
-                _host.EchoText("Missing variable (" + variable +") detected, attempting to reset to default.");
+                _host.EchoText("Missing variable (" + variable +") detected, attempting to reset missing variables to default.");
 
             if (_host.get_Variable("ExpTracker.Window") == "")
                 _host.SendText("#var ExpTracker.Window 1");
@@ -1311,6 +1368,12 @@ namespace EXPTracker
 
             if (_host.get_Variable("ExpTracker.Persistent") == "")
                 _host.SendText("#var ExpTracker.Persistent 0");
+
+            if (_host.get_Variable("ExpTracker.CountSkills") == "")
+                _host.SendText("#var ExpTracker.CountSkills 1");
+
+            if (_host.get_Variable("ExpTracker.CountMinMindstate") == "")
+                _host.SendText("#var ExpTracker.CountMinMindstate 0");
 
             if (_host.get_Variable("ExpTracker.SortType") == "")
                 _host.SendText("#var ExpTracker.SortType 1");

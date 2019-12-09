@@ -65,6 +65,12 @@ namespace EXPTracker
             else
                 _host.SendText("#var ExpTracker.Persistent 0");
 
+            if (cbCountSkills.Checked == true)
+                _host.SendText("#var ExpTracker.CountSkills 1");
+            else
+                _host.SendText("#var ExpTracker.CountSkills 0");
+            _host.SendText("#var ExpTracker.CountMinMindstate " + updownMinMindstate.Value.ToString());
+            
 
             if (comboExpSort.Text == "A to Z")
                 _host.SendText("#var ExpTracker.SortType 0");
@@ -233,12 +239,20 @@ namespace EXPTracker
             else
                 cbEchoSleep.Enabled = false;
         }
-        /*
-        private void cbEchoSleep_CheckedChanged(object sender, EventArgs e)
-        {
 
+        private void CbCountSkills_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbCountSkills.Checked == true)
+                updownMinMindstate.Enabled = true;
+            else
+                updownMinMindstate.Enabled = false;
         }
-        */
+        /*
+private void cbEchoSleep_CheckedChanged(object sender, EventArgs e)
+{
+
+}
+*/
         /*
         private void cbPersistent_CheckedChanged(object sender, EventArgs e)
         {

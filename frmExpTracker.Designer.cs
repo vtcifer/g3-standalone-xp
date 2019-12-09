@@ -55,6 +55,9 @@
             this.cbPersistent = new System.Windows.Forms.CheckBox();
             this.lblReportSort = new System.Windows.Forms.Label();
             this.comboReportSort = new System.Windows.Forms.ComboBox();
+            this.cbCountSkills = new System.Windows.Forms.CheckBox();
+            this.updownMinMindstate = new System.Windows.Forms.NumericUpDown();
+            ((System.ComponentModel.ISupportInitialize)(this.updownMinMindstate)).BeginInit();
             this.SuspendLayout();
             // 
             // cbEnable
@@ -90,7 +93,7 @@
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(211, 230);
+            this.btnOk.Location = new System.Drawing.Point(211, 253);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
             this.btnOk.TabIndex = 19;
@@ -100,7 +103,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(301, 230);
+            this.btnCancel.Location = new System.Drawing.Point(301, 253);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 20;
@@ -343,11 +346,37 @@
             this.comboReportSort.TabIndex = 12;
             this.comboReportSort.Text = "A to Z";
             // 
+            // cbCountSkills
+            // 
+            this.cbCountSkills.AutoSize = true;
+            this.cbCountSkills.Location = new System.Drawing.Point(32, 221);
+            this.cbCountSkills.Name = "cbCountSkills";
+            this.cbCountSkills.Size = new System.Drawing.Size(216, 17);
+            this.cbCountSkills.TabIndex = 27;
+            this.cbCountSkills.Text = "Count active skills >                 mindstate";
+            this.cbCountSkills.UseVisualStyleBackColor = true;
+            this.cbCountSkills.CheckedChanged += new System.EventHandler(this.CbCountSkills_CheckedChanged);
+            // 
+            // updownMinMindstate
+            // 
+            this.updownMinMindstate.Location = new System.Drawing.Point(152, 218);
+            this.updownMinMindstate.Maximum = new decimal(new int[] {
+            33,
+            0,
+            0,
+            0});
+            this.updownMinMindstate.Name = "updownMinMindstate";
+            this.updownMinMindstate.Size = new System.Drawing.Size(38, 20);
+            this.updownMinMindstate.TabIndex = 28;
+            this.updownMinMindstate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
             // frmEXPTracker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(585, 280);
+            this.ClientSize = new System.Drawing.Size(585, 306);
+            this.Controls.Add(this.updownMinMindstate);
+            this.Controls.Add(this.cbCountSkills);
             this.Controls.Add(this.comboReportSort);
             this.Controls.Add(this.lblReportSort);
             this.Controls.Add(this.cbPersistent);
@@ -378,6 +407,7 @@
             this.Name = "frmEXPTracker";
             this.Text = "Experience Tracker";
             this.Load += new System.EventHandler(this.Form1_Load);
+            ((System.ComponentModel.ISupportInitialize)(this.updownMinMindstate)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -412,5 +442,7 @@
         public System.Windows.Forms.CheckBox cbPersistent;
         private System.Windows.Forms.Label lblReportSort;
         public System.Windows.Forms.ComboBox comboReportSort;
+        public System.Windows.Forms.CheckBox cbCountSkills;
+        public System.Windows.Forms.NumericUpDown updownMinMindstate;
     }
 }
