@@ -94,6 +94,14 @@ namespace EXPTracker
             _host.SendText("#var {ExpTracker.Color.Learned} {" + txtLearned.Text + "}");
             _host.SendText("#var {ExpTracker.Color.Normal} {" + txtNormal.Text + "}");
 
+            if (cbEchoExp.Checked == true)
+                _host.SendText("#var {ExpTracker.EchoExp} {1}");
+            else
+                _host.SendText("#var {ExpTracker.EchoExp} {0}");
+
+            _host.SendText("#var {ExpTracker.Color.EchoGained} {" + txtEchoGain.Text + "}");
+            _host.SendText("#var {ExpTracker.Color.EchoPulsed} {" + txtEchoPulse.Text + "}");
+
             _host.SendText("#var save");
 
             this.Close();
@@ -247,23 +255,52 @@ namespace EXPTracker
             else
                 updownMinMindstate.Enabled = false;
         }
-        /*
-private void cbEchoSleep_CheckedChanged(object sender, EventArgs e)
-{
 
-}
-*/
-        /*
-        private void cbPersistent_CheckedChanged(object sender, EventArgs e)
+        private void btnColorExpEchoGain_Click(object sender, EventArgs e)
         {
-
+            ColorDialog colorDialog = new ColorDialog();
+            colorDialog.FullOpen = true;
+            if (colorDialog.ShowDialog() != DialogResult.Cancel)
+            {
+                txtEchoGain.Text = ColorToString(colorDialog.Color);
+                lblColorExpEchoGain.ForeColor = colorDialog.Color;
+            }
         }
-        */
-        /*
-        private void LblSort_Click(object sender, EventArgs e)
+
+        private void btnColorExpEchoPulse_Click(object sender, EventArgs e)
         {
-
+            ColorDialog colorDialog = new ColorDialog();
+            colorDialog.FullOpen = true;
+            if (colorDialog.ShowDialog() != DialogResult.Cancel)
+            {
+                txtEchoPulse.Text = ColorToString(colorDialog.Color);
+                lblColorExpEchoPulse.ForeColor = colorDialog.Color;
+            }
         }
-        */
+
+        private void cbEchoExp_CheckedChanged(object sender, EventArgs e)
+        {
+            if (cbEchoExp.Checked == true)
+            {
+                txtEchoGain.Enabled = true;
+                lblColorExpEchoGain.Enabled = true;
+                btnColorExpEchoGain.Enabled = true;
+
+                txtEchoPulse.Enabled = true;
+                lblColorExpEchoPulse.Enabled = true;
+                btnColorExpEchoPulse.Enabled = true;
+            }
+            else
+            {
+                txtEchoGain.Enabled = false;
+                lblColorExpEchoGain.Enabled = false;
+                btnColorExpEchoGain.Enabled = false;
+
+                txtEchoPulse.Enabled = false;
+                lblColorExpEchoPulse.Enabled = false;
+                btnColorExpEchoPulse.Enabled = false;
+
+            }
+        }
     }
 }

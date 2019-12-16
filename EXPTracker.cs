@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.2.20";
+        readonly string _VERSION = "3.3.25";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -28,6 +28,7 @@ namespace EXPTracker
         private Hashtable _skillList = new Hashtable(); //Used for storing/sorting skills for display in Exp Win
         private int _TDP = 0;                           //Used for TDP tracking, this is current TDPs
         private int _startTDP = 0;                      //Used for TDP tracking, this is set when first checking
+        private int pulseSeed = -1;                     //Used for adjusting what the 'start' pulse was
         private int _RestedEXPStored = -1;              //Used for tracking rested experience.
         private int _RestedExpUsable = -1;              //Used for tracking rested experience.
         private bool _trackingTDP = false;              //Used for TDP tracking, this it to know when the plugin has gathered TDP info
@@ -38,6 +39,8 @@ namespace EXPTracker
         private bool _ExpBrief = false;
         private bool _enabled = true;                   //Used for "Pausing" the tracker, so no new data is input.  Also used to disable from
                                                         //Plugins Window
+        private string EchoLearned = "";
+        private string EchoPulsed = "";
 
         //The following hashtables are used as alternatives to switch statments using string data which can have rather bad run time.  
         private Hashtable MasterSkill;
@@ -155,7 +158,7 @@ namespace EXPTracker
             _startTime = DateTime.Now;
             //Create hash table for all skills
             _skillList = new Hashtable(MAX_SKILL);
-
+            
             //Set Genie Variables if not already set
             init_variables();
            
@@ -519,6 +522,25 @@ namespace EXPTracker
                     _host.SendText("EXP");
                     _ExpBrief = false;
                 }
+                
+                if (EchoLearned != "" && _host.get_Variable("ExpTracker.EchoExp") == "1")
+                {
+                    EchoLearned = EchoLearned.Substring(0, EchoLearned.Length - 2);
+                    _host.SendText("#echo " + _host.get_Variable("ExpTracker.Color.EchoGained") + " Learned: " + EchoLearned);
+                    _host.SendText("#parse Learned: " + EchoLearned);
+                    _host.SendText("#log Learned: " + EchoLearned);
+                }
+                if (EchoLearned != "")
+                    EchoLearned = "";
+
+                if (EchoPulsed != "" && _host.get_Variable("ExpTracker.EchoExp") == "1")
+                {
+                    EchoPulsed = EchoPulsed.Substring(0, EchoPulsed.Length - 2);
+                    _host.SendText("#echo " + _host.get_Variable("ExpTracker.Color.EchoPulsed") + " Pulsed: " + EchoPulsed);
+                    
+                }
+                if (EchoPulsed != "")
+                    EchoPulsed = "";
 
                 //However, only ouptut the update, if there is an update
                 //for the exp window.
@@ -578,9 +600,9 @@ namespace EXPTracker
                                 else
                                 {
                                     if (XML.Contains("<b>"))
-                                        ParseExperience(xn2.InnerText.Trim(), 2);
+                                        ParseExperience(xn2.InnerText.Trim(), 2, true);
                                     else
-                                        ParseExperience(xn2.InnerText.Trim(), 1);
+                                        ParseExperience(xn2.InnerText.Trim(), 1, true);
                                 }
                             }
                             else
@@ -591,7 +613,7 @@ namespace EXPTracker
                                 }
                                 else
                                 {
-                                    ParseExperience(xn.InnerText.Trim(), 0);
+                                    ParseExperience(xn.InnerText.Trim(), 0, true);
                                 }
                             }
                             break;
@@ -632,33 +654,14 @@ namespace EXPTracker
                 }
                 else if (Variable == "ExpTracker.CountMinMindstate")
                 {
-                    int temp;
-                    try
-                    {
-                        temp = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
-                        if (temp < 0)
-                        {
-                            _host.EchoText("Variable ExpTracker.CountMinMindstate minimum value is 0.");
-                            _host.SendText("#var ExpTracker.CountMinMindstate 0");
-                        }
-                        else if (temp > 33)
-                        {
-                            _host.EchoText("Variable ExpTracker.CountMinMindstate maximum value is 33.");
-                            _host.SendText("#var ExpTracker.CountMinMindstate 33");
-                        }
-                    }
-                    catch
-                    {
-                        _host.EchoText("Variable ExpTracker.CountMinMindstate must be an integer.");
-                        _host.EchoText("Setting value to default of 0.");
-                        _host.SendText("#var ExpTracker.CountMinMindstate 0");
-                    }
+                    set_min_mindstae();
                     return;
                 }
 
                 if (_host.get_Variable(Variable) == "")
                     init_variables(true, Variable);
             }
+/*          Removed this due to needing a way to figure out the 'seed' for when game started. 
             if (Variable == "gametime")
             {
 
@@ -715,6 +718,7 @@ namespace EXPTracker
                         _host.set_Variable("ExpTracker.NextPulse", "Debilitation|Utility|Warding|Sorcery|Evasion|Athletics|Perception|Scouting");
                 }
             }
+*/
         }
 
         public void ParentClosing()
@@ -739,6 +743,14 @@ namespace EXPTracker
             //and sets the form to reflect the current setup.
 
             //Done in reverse order
+
+            form.txtEchoGain.Text = _host.get_Variable("ExpTracker.Color.EchoGained");
+            form.txtEchoPulse.Text = _host.get_Variable("ExpTracker.Color.EchoPulsed");
+            if (_host.get_Variable("ExpTracker.EchoExp") == "1")
+                form.cbEchoExp.Checked = true;
+            else
+                form.cbEchoExp.Checked = false;
+
             form.txtLearned.Text = _host.get_Variable("ExpTracker.Color.Learned");
             form.txtRankGained.Text = _host.get_Variable("ExpTracker.Color.RankGained");
             form.txtNormal.Text = _host.get_Variable("ExpTracker.Color.Normal");
@@ -765,21 +777,8 @@ namespace EXPTracker
                 form.cbPersistent.Checked = true;
             else
                 form.cbPersistent.Checked = false;
-            int temp;
-            try
-            {
-                temp = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
-                if (temp < 0)
-                    form.updownMinMindstate.Value = 0;
-                else if (temp > 33)
-                    form.updownMinMindstate.Value = 33;
-                else
-                    form.updownMinMindstate.Value = temp;
-            }
-            catch
-            {
-                form.updownMinMindstate.Value = 0;
-            }
+
+            form.updownMinMindstate.Value = get_min_mindstate();
             if (_host.get_Variable("ExpTracker.CountSkills") == "1")
                 form.cbCountSkills.Checked = true;
             else
@@ -843,7 +842,7 @@ namespace EXPTracker
         //Parameters:
         //              string line:    the string containing the exp data (from xml or game output)
         //              int type:       If skill pulsed (0), learned (1) or ranked (2)
-        private void ParseExperience(string line, int type)
+        private void ParseExperience(string line, int type, bool IsXML = false)
         {
             //Ensure using decimal point instead of decimal comma or other
             if (System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator != ".")
@@ -914,7 +913,24 @@ namespace EXPTracker
                     _updateExp = true;
 
                 skill.learningRate = learningRate;
+                int oldLearningRate = skill.iLearningRate;
                 skill.iLearningRate = GetLearningRateInt(learningRate);
+                int diffLearningRate = skill.iLearningRate - oldLearningRate;
+                if (IsXML)
+                {
+                    if (type == 1)
+                    {
+                        if (diffLearningRate > 0)
+                            EchoLearned = EchoLearned + name + "(+" + diffLearningRate.ToString() + "), ";
+                        else
+                            EchoLearned = EchoLearned + name + "(" + diffLearningRate.ToString() + "), ";
+                    }
+                    else
+                    {
+                        if (!EchoPulsed.Contains(name))
+                            EchoPulsed = EchoPulsed + name + "(" + diffLearningRate.ToString() + "), ";
+                    }
+                }
                 skill.rank = dRank;
                 if (skill.startRank == -1)
                     skill.startRank = dRank;
@@ -1094,7 +1110,7 @@ namespace EXPTracker
                     //list for sorting
                     ArrayList sortList = new ArrayList();
                     int SkillCount = 0;
-                    int CountMinMindstate = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
+                    int CountMinMindstate = get_min_mindstate();
 
 
                     //iterate through the list of all skills
@@ -1339,59 +1355,153 @@ namespace EXPTracker
 
         public void init_variables(bool _echoinit = false, string variable = "")
         {
+            bool needsave = _echoinit;
             if (_echoinit == true)
                 _host.EchoText("Missing variable (" + variable +") detected, attempting to reset missing variables to default.");
 
             if (_host.get_Variable("ExpTracker.Window") == "")
+            {
                 _host.SendText("#var ExpTracker.Window 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.ShowRankGain") == "")
+            { 
                 _host.SendText("#var ExpTracker.ShowRankGain 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.LearningRate") == "")
+            { 
                 _host.SendText("#var ExpTracker.LearningRate 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.LearningRateNumber") == "")
+            {
                 _host.SendText("#var ExpTracker.LearningRateNumber 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.TrackSleep") == "")
+            {
                 _host.SendText("#var ExpTracker.TrackSleep 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.EchoSleep") == "")
+            {
                 _host.SendText("#var ExpTracker.EchoSleep 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.GagExp") == "")
+            {
                 _host.SendText("#var ExpTracker.GagExp 0");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.ShortNames") == "")
+            {
                 _host.SendText("#var ExpTracker.ShortNames 0");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.Persistent") == "")
+            {
                 _host.SendText("#var ExpTracker.Persistent 0");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.CountSkills") == "")
+            {
                 _host.SendText("#var ExpTracker.CountSkills 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.CountMinMindstate") == "")
+            {
                 _host.SendText("#var ExpTracker.CountMinMindstate 0");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.SortType") == "")
+            {
                 _host.SendText("#var ExpTracker.SortType 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.ReportType") == "")
+            {
                 _host.SendText("#var ExpTracker.ReportType 1");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.Color.Normal") == "")
+            {
                 _host.SendText("#var ExpTracker.Color.Normal WhiteSmoke");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.Color.RankGained") == "")
+            {
                 _host.SendText("#var ExpTracker.Color.RankGained Red");
+                needsave = true;
+            }
 
             if (_host.get_Variable("ExpTracker.Color.Learned") == "")
+            {
                 _host.SendText("#var ExpTracker.Color.Learned Aqua");
+                needsave = true;
+            }
 
-            if (_echoinit == true)
+            if (needsave == true)
                 _host.SendText("#var save");
+        }
+
+        public int get_min_mindstate()
+        {
+            int temp;
+            try
+            {
+                temp = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
+                if (temp < 0)
+                    temp = 0;
+                else if (temp > 33)
+                    temp = 33;
+            }
+            catch
+            {
+                temp = 0;
+            }
+            return temp;
+        }
+
+        public void set_min_mindstae()
+        {
+            int temp;
+            try
+            {
+                temp = Convert.ToInt32(_host.get_Variable("ExpTracker.CountMinMindstate"));
+                if (temp < 0)
+                {
+                    _host.EchoText("Variable ExpTracker.CountMinMindstate minimum value is 0.");
+                    _host.SendText("#var ExpTracker.CountMinMindstate 0");
+                }
+                else if (temp > 33)
+                {
+                    _host.EchoText("Variable ExpTracker.CountMinMindstate maximum value is 33.");
+                    _host.SendText("#var ExpTracker.CountMinMindstate 33");
+                }
+            }
+            catch
+            {
+                _host.EchoText("Variable ExpTracker.CountMinMindstate must be an integer.");
+                _host.EchoText("Setting value to default of 0.");
+                _host.SendText("#var ExpTracker.CountMinMindstate 0");
+            }
+
+
         }
         #endregion
 

@@ -57,6 +57,15 @@
             this.comboReportSort = new System.Windows.Forms.ComboBox();
             this.cbCountSkills = new System.Windows.Forms.CheckBox();
             this.updownMinMindstate = new System.Windows.Forms.NumericUpDown();
+            this.cbEchoExp = new System.Windows.Forms.CheckBox();
+            this.btnColorExpEchoPulse = new System.Windows.Forms.Button();
+            this.lblColorExpEchoPulse = new System.Windows.Forms.Label();
+            this.lblColorExpEchoGain = new System.Windows.Forms.Label();
+            this.btnColorExpEchoGain = new System.Windows.Forms.Button();
+            this.lblExpEchoPulse = new System.Windows.Forms.Label();
+            this.lblExpEchoGain = new System.Windows.Forms.Label();
+            this.txtEchoPulse = new System.Windows.Forms.TextBox();
+            this.txtEchoGain = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.updownMinMindstate)).BeginInit();
             this.SuspendLayout();
             // 
@@ -93,7 +102,7 @@
             // 
             // btnOk
             // 
-            this.btnOk.Location = new System.Drawing.Point(211, 253);
+            this.btnOk.Location = new System.Drawing.Point(211, 319);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(75, 23);
             this.btnOk.TabIndex = 19;
@@ -103,7 +112,7 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(301, 253);
+            this.btnCancel.Location = new System.Drawing.Point(301, 319);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 20;
@@ -370,11 +379,107 @@
             this.updownMinMindstate.TabIndex = 28;
             this.updownMinMindstate.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             // 
+            // cbEchoExp
+            // 
+            this.cbEchoExp.AutoSize = true;
+            this.cbEchoExp.Location = new System.Drawing.Point(203, 244);
+            this.cbEchoExp.Name = "cbEchoExp";
+            this.cbEchoExp.Size = new System.Drawing.Size(173, 17);
+            this.cbEchoExp.TabIndex = 38;
+            this.cbEchoExp.Text = "Echo Experience Gains/Pulses";
+            this.cbEchoExp.UseVisualStyleBackColor = true;
+            this.cbEchoExp.CheckedChanged += new System.EventHandler(this.cbEchoExp_CheckedChanged);
+            // 
+            // btnColorExpEchoPulse
+            // 
+            this.btnColorExpEchoPulse.Location = new System.Drawing.Point(504, 284);
+            this.btnColorExpEchoPulse.Name = "btnColorExpEchoPulse";
+            this.btnColorExpEchoPulse.Size = new System.Drawing.Size(61, 22);
+            this.btnColorExpEchoPulse.TabIndex = 37;
+            this.btnColorExpEchoPulse.Text = "Color...";
+            this.btnColorExpEchoPulse.UseVisualStyleBackColor = true;
+            this.btnColorExpEchoPulse.Click += new System.EventHandler(this.btnColorExpEchoPulse_Click);
+            // 
+            // lblColorExpEchoPulse
+            // 
+            this.lblColorExpEchoPulse.BackColor = System.Drawing.Color.Black;
+            this.lblColorExpEchoPulse.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblColorExpEchoPulse.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.lblColorExpEchoPulse.Location = new System.Drawing.Point(415, 284);
+            this.lblColorExpEchoPulse.Name = "lblColorExpEchoPulse";
+            this.lblColorExpEchoPulse.Size = new System.Drawing.Size(83, 20);
+            this.lblColorExpEchoPulse.TabIndex = 33;
+            this.lblColorExpEchoPulse.Text = "Color";
+            this.lblColorExpEchoPulse.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // lblColorExpEchoGain
+            // 
+            this.lblColorExpEchoGain.BackColor = System.Drawing.Color.Black;
+            this.lblColorExpEchoGain.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblColorExpEchoGain.ForeColor = System.Drawing.Color.WhiteSmoke;
+            this.lblColorExpEchoGain.Location = new System.Drawing.Point(134, 284);
+            this.lblColorExpEchoGain.Name = "lblColorExpEchoGain";
+            this.lblColorExpEchoGain.Size = new System.Drawing.Size(83, 20);
+            this.lblColorExpEchoGain.TabIndex = 32;
+            this.lblColorExpEchoGain.Text = "Color";
+            this.lblColorExpEchoGain.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // btnColorExpEchoGain
+            // 
+            this.btnColorExpEchoGain.Location = new System.Drawing.Point(223, 284);
+            this.btnColorExpEchoGain.Name = "btnColorExpEchoGain";
+            this.btnColorExpEchoGain.Size = new System.Drawing.Size(61, 22);
+            this.btnColorExpEchoGain.TabIndex = 35;
+            this.btnColorExpEchoGain.Text = "Color...";
+            this.btnColorExpEchoGain.UseVisualStyleBackColor = true;
+            this.btnColorExpEchoGain.Click += new System.EventHandler(this.btnColorExpEchoGain_Click);
+            // 
+            // lblExpEchoPulse
+            // 
+            this.lblExpEchoPulse.Location = new System.Drawing.Point(310, 265);
+            this.lblExpEchoPulse.Name = "lblExpEchoPulse";
+            this.lblExpEchoPulse.Size = new System.Drawing.Size(255, 19);
+            this.lblExpEchoPulse.TabIndex = 31;
+            this.lblExpEchoPulse.Text = "Experience Pulse Color";
+            this.lblExpEchoPulse.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // lblExpEchoGain
+            // 
+            this.lblExpEchoGain.Location = new System.Drawing.Point(29, 265);
+            this.lblExpEchoGain.Name = "lblExpEchoGain";
+            this.lblExpEchoGain.Size = new System.Drawing.Size(255, 16);
+            this.lblExpEchoGain.TabIndex = 30;
+            this.lblExpEchoGain.Text = "Experience Gain Color";
+            this.lblExpEchoGain.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // txtEchoPulse
+            // 
+            this.txtEchoPulse.Location = new System.Drawing.Point(309, 284);
+            this.txtEchoPulse.Name = "txtEchoPulse";
+            this.txtEchoPulse.Size = new System.Drawing.Size(100, 20);
+            this.txtEchoPulse.TabIndex = 36;
+            // 
+            // txtEchoGain
+            // 
+            this.txtEchoGain.Location = new System.Drawing.Point(29, 284);
+            this.txtEchoGain.Name = "txtEchoGain";
+            this.txtEchoGain.Size = new System.Drawing.Size(100, 20);
+            this.txtEchoGain.TabIndex = 34;
+            // 
             // frmEXPTracker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(585, 306);
+            this.ClientSize = new System.Drawing.Size(585, 377);
+            this.Controls.Add(this.cbEchoExp);
+            this.Controls.Add(this.btnColorExpEchoPulse);
+            this.Controls.Add(this.lblColorExpEchoPulse);
+            this.Controls.Add(this.lblColorExpEchoGain);
+            this.Controls.Add(this.btnColorExpEchoGain);
+            this.Controls.Add(this.lblExpEchoPulse);
+            this.Controls.Add(this.lblExpEchoGain);
+            this.Controls.Add(this.txtEchoPulse);
+            this.Controls.Add(this.txtEchoGain);
             this.Controls.Add(this.updownMinMindstate);
             this.Controls.Add(this.cbCountSkills);
             this.Controls.Add(this.comboReportSort);
@@ -444,5 +549,14 @@
         public System.Windows.Forms.ComboBox comboReportSort;
         public System.Windows.Forms.CheckBox cbCountSkills;
         public System.Windows.Forms.NumericUpDown updownMinMindstate;
+        public System.Windows.Forms.CheckBox cbEchoExp;
+        private System.Windows.Forms.Button btnColorExpEchoPulse;
+        private System.Windows.Forms.Label lblColorExpEchoPulse;
+        private System.Windows.Forms.Label lblColorExpEchoGain;
+        private System.Windows.Forms.Button btnColorExpEchoGain;
+        protected System.Windows.Forms.Label lblExpEchoPulse;
+        private System.Windows.Forms.Label lblExpEchoGain;
+        public System.Windows.Forms.TextBox txtEchoPulse;
+        public System.Windows.Forms.TextBox txtEchoGain;
     }
 }
