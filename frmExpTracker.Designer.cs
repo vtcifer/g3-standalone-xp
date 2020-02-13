@@ -526,12 +526,6 @@
         public System.Windows.Forms.CheckBox cbRankGain;
         public System.Windows.Forms.CheckBox cbGagExp;
         private System.Windows.Forms.Label lblRankColor;
-        private System.Windows.Forms.Button btnRankGained;
-        private System.Windows.Forms.Label lblRankGained;
-        private System.Windows.Forms.Label lblLearned;
-        private System.Windows.Forms.Button btnLearned;
-        private System.Windows.Forms.Label lblNormal;
-        private System.Windows.Forms.Button btnNormal;
         public System.Windows.Forms.Label lblNormalColor;
         public System.Windows.Forms.TextBox txtNormal;
         public System.Windows.Forms.TextBox txtRankGained;
@@ -550,13 +544,19 @@
         public System.Windows.Forms.CheckBox cbCountSkills;
         public System.Windows.Forms.NumericUpDown updownMinMindstate;
         public System.Windows.Forms.CheckBox cbEchoExp;
-        private System.Windows.Forms.Button btnColorExpEchoPulse;
-        private System.Windows.Forms.Label lblColorExpEchoPulse;
-        private System.Windows.Forms.Label lblColorExpEchoGain;
-        private System.Windows.Forms.Button btnColorExpEchoGain;
         protected System.Windows.Forms.Label lblExpEchoPulse;
         private System.Windows.Forms.Label lblExpEchoGain;
         public System.Windows.Forms.TextBox txtEchoPulse;
         public System.Windows.Forms.TextBox txtEchoGain;
+        public System.Windows.Forms.Button btnRankGained;
+        public System.Windows.Forms.Label lblRankGained;
+        public System.Windows.Forms.Label lblLearned;
+        public System.Windows.Forms.Button btnLearned;
+        public System.Windows.Forms.Label lblNormal;
+        public System.Windows.Forms.Button btnNormal;
+        public System.Windows.Forms.Button btnColorExpEchoPulse;
+        public System.Windows.Forms.Label lblColorExpEchoPulse;
+        public System.Windows.Forms.Label lblColorExpEchoGain;
+        public System.Windows.Forms.Button btnColorExpEchoGain;
     }
 }

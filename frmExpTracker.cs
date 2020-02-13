@@ -186,6 +186,19 @@ namespace EXPTracker
             else if (txtLearned.Text.StartsWith("#") && txtLearned.Text.Length == 7)
                 lblLearned.ForeColor = System.Drawing.ColorTranslator.FromHtml(txtLearned.Text);
             cbEnable_CheckedChanged(sender,e);
+
+            color = Color.FromName(txtEchoGain.Text);
+            if (color.ToArgb() != 0)
+                lblColorExpEchoGain.ForeColor = color;
+            else if (txtEchoGain.Text.StartsWith("#") && txtEchoGain.Text.Length == 7)
+                lblColorExpEchoGain.ForeColor = System.Drawing.ColorTranslator.FromHtml(txtEchoGain.Text);
+
+            color = Color.FromName(txtEchoPulse.Text);
+            if (color.ToArgb() != 0)
+                lblColorExpEchoPulse.ForeColor = color;
+            else if (txtEchoPulse.Text.StartsWith("#") && txtEchoPulse.Text.Length == 7)
+                lblColorExpEchoPulse.ForeColor = System.Drawing.ColorTranslator.FromHtml(txtEchoPulse.Text);
+            cbEchoExp_CheckedChanged(sender, e);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
@@ -212,6 +225,7 @@ namespace EXPTracker
                 comboExpSort.Enabled = true;
                 comboReportSort.Enabled = true;
                 txtNormal.Enabled = true;
+                
                 btnNormal.Enabled = true;
                 txtRankGained.Enabled = true;
                 btnRankGained.Enabled = true;

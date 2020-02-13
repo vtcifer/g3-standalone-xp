@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.3.25";
+        readonly string _VERSION = "3.4.42";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -34,10 +34,12 @@ namespace EXPTracker
         private bool _trackingTDP = false;              //Used for TDP tracking, this it to know when the plugin has gathered TDP info
         private bool _updateExp = false;                //Used for know when next prompt is shown, to update EXPWindow
         private bool _parsing = false;                  //Used for ParseText, to know if EXP command output is returned
+        private bool _expmods = false;                  //Used for ParseText, to know if should be checking against exp mods
         private int _sleeping = -1;                     //Used for tracking if you are sleeping or not
         private bool _report = false;                   //Used for ParseText, to know if you are running a report
         private bool _ExpBrief = false;
         private bool _enabled = true;                   //Used for "Pausing" the tracker, so no new data is input.  Also used to disable from
+        private bool _needsexp0 = false;                //Used to only send exp0 once when needed
                                                         //Plugins Window
         private string EchoLearned = "";
         private string EchoPulsed = "";
@@ -161,128 +163,132 @@ namespace EXPTracker
             
             //Set Genie Variables if not already set
             init_variables();
-           
+
             //create AND popluate the master hashtables
             //This in theory should front load processing time for when Genie loads
             //and speed up the time it takes to parse, and generate EXP window data.
-            
-            //
-            MasterSkill = new Hashtable(MAX_SKILL);
-            //Armor skills - 7
-            MasterSkill.Add("Shield Usage", new ItemMasterSkill { SortLR = 0, ShortName = "Shield" });
-            MasterSkill.Add("Light Armor", new ItemMasterSkill { SortLR = 1, ShortName = "Lt Armor" });
-            MasterSkill.Add("Chain Armor", new ItemMasterSkill { SortLR = 2, ShortName = "Chain" });
-            MasterSkill.Add("Brigandine", new ItemMasterSkill { SortLR = 3, ShortName = "Brigan" });
-            MasterSkill.Add("Plate Armor", new ItemMasterSkill { SortLR = 4, ShortName = "Plate" });
-            MasterSkill.Add("Defending", new ItemMasterSkill { SortLR = 5, ShortName = "Defend" });
-            MasterSkill.Add("Conviction", new ItemMasterSkill { SortLR = 6, ShortName = "Convict" });
-            
-            //Weapon Skills - 19
-            MasterSkill.Add("Parry Ability", new ItemMasterSkill { SortLR = 100, ShortName = "Parry" });
-            MasterSkill.Add("Small Edged", new ItemMasterSkill { SortLR = 101, ShortName = "SE" });
-            MasterSkill.Add("Large Edged", new ItemMasterSkill { SortLR = 102, ShortName = "LE" });
-            MasterSkill.Add("Twohanded Edged", new ItemMasterSkill { SortLR = 103, ShortName = "2HE" });
-            MasterSkill.Add("Small Blunt", new ItemMasterSkill { SortLR = 104, ShortName = "SB" });
-            MasterSkill.Add("Large Blunt", new ItemMasterSkill { SortLR = 105, ShortName = "LB" });
-            MasterSkill.Add("Twohanded Blunt", new ItemMasterSkill { SortLR = 106, ShortName = "2HB" });
-            MasterSkill.Add("Slings", new ItemMasterSkill { SortLR = 107, ShortName = "Sling" });
-            MasterSkill.Add("Bow", new ItemMasterSkill { SortLR = 108, ShortName = "Bow" });
-            MasterSkill.Add("Crossbow", new ItemMasterSkill { SortLR = 109, ShortName = "XBow" });
-            MasterSkill.Add("Staves", new ItemMasterSkill { SortLR = 110, ShortName = "Staves" });
-            MasterSkill.Add("Polearms", new ItemMasterSkill { SortLR = 111, ShortName = "Polearm" });
-            MasterSkill.Add("Light Thrown", new ItemMasterSkill { SortLR = 112, ShortName = "LT" });
-            MasterSkill.Add("Heavy Thrown", new ItemMasterSkill { SortLR = 113, ShortName = "HT" });
-            MasterSkill.Add("Brawling", new ItemMasterSkill { SortLR = 114, ShortName = "Brawl" });
-            MasterSkill.Add("Offhand Weapon", new ItemMasterSkill { SortLR = 115, ShortName = "Offhand" });
-            MasterSkill.Add("Melee Mastery", new ItemMasterSkill { SortLR = 116, ShortName = "Melee" });
-            MasterSkill.Add("Missile Mastery", new ItemMasterSkill { SortLR = 117, ShortName = "Missile" });
-            MasterSkill.Add("Expertise", new ItemMasterSkill { SortLR = 118, ShortName = "Expert" });
-     
-            //Magic Skills - 18
-            MasterSkill.Add("Arcane Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Elemental Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Holy Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Inner Fire", new ItemMasterSkill { SortLR = 200, ShortName = "IF" });
-            MasterSkill.Add("Inner Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Life Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Lunar Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" });
-            MasterSkill.Add("Attunement", new ItemMasterSkill { SortLR = 201, ShortName = "Attune" });
-            MasterSkill.Add("Arcana", new ItemMasterSkill { SortLR = 202, ShortName = "Arcana" });
-            MasterSkill.Add("Targeted Magic", new ItemMasterSkill { SortLR = 203, ShortName = "TM" });
-            MasterSkill.Add("Augmentation", new ItemMasterSkill { SortLR = 204, ShortName = "Augment" });
-            MasterSkill.Add("Debilitation", new ItemMasterSkill { SortLR = 205, ShortName = "Debilit" });
-            MasterSkill.Add("Utility", new ItemMasterSkill { SortLR = 206, ShortName = "Utility" });
-            MasterSkill.Add("Warding", new ItemMasterSkill { SortLR = 207, ShortName = "Warding" });
-            MasterSkill.Add("Sorcery", new ItemMasterSkill { SortLR = 208, ShortName = "Sorcery" });
-            MasterSkill.Add("Astrology", new ItemMasterSkill { SortLR = 209, ShortName = "Astro" });
-            MasterSkill.Add("Summoning", new ItemMasterSkill { SortLR = 209, ShortName = "Summon" });
-            MasterSkill.Add("Theurgy", new ItemMasterSkill { SortLR = 209, ShortName = "Theurgy" });
- 
-            //Survival Skills - 12
-            MasterSkill.Add("Evasion", new ItemMasterSkill { SortLR = 300, ShortName = "Evade" });
-            MasterSkill.Add("Athletics", new ItemMasterSkill { SortLR = 301, ShortName = "Athletic" });
-            MasterSkill.Add("Perception", new ItemMasterSkill { SortLR = 302, ShortName = "Percep" });
-            MasterSkill.Add("Stealth", new ItemMasterSkill { SortLR = 303, ShortName = "Stealth" });
-            MasterSkill.Add("Locksmithing", new ItemMasterSkill { SortLR = 304, ShortName = "Locks" });
-            MasterSkill.Add("Thievery", new ItemMasterSkill { SortLR = 305, ShortName = "Thievery" });
-            MasterSkill.Add("First Aid", new ItemMasterSkill { SortLR = 306, ShortName = "FA" });
-            MasterSkill.Add("Outdoorsmanship", new ItemMasterSkill { SortLR = 307, ShortName = "Outdoor" });
-            MasterSkill.Add("Skinning", new ItemMasterSkill { SortLR = 308, ShortName = "Skin" });
-            MasterSkill.Add("Backstab", new ItemMasterSkill { SortLR = 309, ShortName = "BS" });
-            MasterSkill.Add("Scouting", new ItemMasterSkill { SortLR = 309, ShortName = "Scout" });
-            MasterSkill.Add("Thanatology", new ItemMasterSkill { SortLR = 309, ShortName = "Than" });
-            
-            //Lore Skills - 13
-            MasterSkill.Add("Forging", new ItemMasterSkill { SortLR = 401, ShortName = "Forging" });
-            MasterSkill.Add("Engineering", new ItemMasterSkill { SortLR = 402, ShortName = "Engineer" });
-            MasterSkill.Add("Outfitting", new ItemMasterSkill { SortLR = 403, ShortName = "Outfit" });
-            MasterSkill.Add("Alchemy", new ItemMasterSkill { SortLR = 404, ShortName = "Alchemy" });
-            MasterSkill.Add("Enchanting", new ItemMasterSkill { SortLR = 405, ShortName = "Enchant" });
-            MasterSkill.Add("Scholarship", new ItemMasterSkill { SortLR = 406, ShortName = "Scholar" });
-            MasterSkill.Add("Mechanical Lore", new ItemMasterSkill { SortLR = 407, ShortName = "Mech" });
-            MasterSkill.Add("Appraisal", new ItemMasterSkill { SortLR = 408, ShortName = "App" });
-            MasterSkill.Add("Performance", new ItemMasterSkill { SortLR = 409, ShortName = "Perform" });
-            MasterSkill.Add("Tactics", new ItemMasterSkill { SortLR = 410, ShortName = "Tactics" });
-            MasterSkill.Add("Bardic Lore", new ItemMasterSkill { SortLR = 410, ShortName = "BardLore" });
-            MasterSkill.Add("Empathy", new ItemMasterSkill { SortLR = 410, ShortName = "Empathy" });
-            MasterSkill.Add("Trading", new ItemMasterSkill { SortLR = 410, ShortName = "Trading" });
 
-            MasterLearnRate = new Hashtable(MAX_LEARNRATE);
-            MasterLearnRate.Add("clear", 0);
-            MasterLearnRate.Add("dabbling", 1);
-            MasterLearnRate.Add("perusing", 2);
-            MasterLearnRate.Add("learning", 3);
-            MasterLearnRate.Add("thoughtful", 4);
-            MasterLearnRate.Add("thinking", 5);
-            MasterLearnRate.Add("considering", 6);
-            MasterLearnRate.Add("pondering", 7);
-            MasterLearnRate.Add("ruminating", 8);
-            MasterLearnRate.Add("concentrating", 9);
-            MasterLearnRate.Add("attentive", 10);
-            MasterLearnRate.Add("deliberative", 11);
-            MasterLearnRate.Add("interested", 12);
-            MasterLearnRate.Add("examining", 13);
-            MasterLearnRate.Add("understanding", 14);
-            MasterLearnRate.Add("absorbing", 15);
-            MasterLearnRate.Add("intrigued", 16);
-            MasterLearnRate.Add("scrutinizing", 17);
-            MasterLearnRate.Add("analyzing", 18);
-            MasterLearnRate.Add("studious", 19);
-            MasterLearnRate.Add("focused", 20);
-            MasterLearnRate.Add("very focused", 21);
-            MasterLearnRate.Add("engaged", 22);
-            MasterLearnRate.Add("very engaged", 23);
-            MasterLearnRate.Add("cogitating", 24);
-            MasterLearnRate.Add("fascinated", 25);
-            MasterLearnRate.Add("captivated", 26);
-            MasterLearnRate.Add("engrossed", 27);
-            MasterLearnRate.Add("riveted", 28);
-            MasterLearnRate.Add("very riveted", 29);
-            MasterLearnRate.Add("rapt", 30);
-            MasterLearnRate.Add("very rapt", 31);
-            MasterLearnRate.Add("enthralled", 32);
-            MasterLearnRate.Add("nearly locked", 33);
-            MasterLearnRate.Add("mind lock", 34);
+            //
+            MasterSkill = new Hashtable(MAX_SKILL)
+            {
+                //Armor skills - 7
+                { "Shield Usage", new ItemMasterSkill { SortLR = 0, ShortName = "Shield" } },
+                { "Light Armor", new ItemMasterSkill { SortLR = 1, ShortName = "Lt Armor" } },
+                { "Chain Armor", new ItemMasterSkill { SortLR = 2, ShortName = "Chain" } },
+                { "Brigandine", new ItemMasterSkill { SortLR = 3, ShortName = "Brigan" } },
+                { "Plate Armor", new ItemMasterSkill { SortLR = 4, ShortName = "Plate" } },
+                { "Defending", new ItemMasterSkill { SortLR = 5, ShortName = "Defend" } },
+                { "Conviction", new ItemMasterSkill { SortLR = 6, ShortName = "Convict" } },
+
+                //Weapon Skills - 19
+                { "Parry Ability", new ItemMasterSkill { SortLR = 100, ShortName = "Parry" } },
+                { "Small Edged", new ItemMasterSkill { SortLR = 101, ShortName = "SE" } },
+                { "Large Edged", new ItemMasterSkill { SortLR = 102, ShortName = "LE" } },
+                { "Twohanded Edged", new ItemMasterSkill { SortLR = 103, ShortName = "2HE" } },
+                { "Small Blunt", new ItemMasterSkill { SortLR = 104, ShortName = "SB" } },
+                { "Large Blunt", new ItemMasterSkill { SortLR = 105, ShortName = "LB" } },
+                { "Twohanded Blunt", new ItemMasterSkill { SortLR = 106, ShortName = "2HB" } },
+                { "Slings", new ItemMasterSkill { SortLR = 107, ShortName = "Sling" } },
+                { "Bow", new ItemMasterSkill { SortLR = 108, ShortName = "Bow" } },
+                { "Crossbow", new ItemMasterSkill { SortLR = 109, ShortName = "XBow" } },
+                { "Staves", new ItemMasterSkill { SortLR = 110, ShortName = "Staves" } },
+                { "Polearms", new ItemMasterSkill { SortLR = 111, ShortName = "Polearm" } },
+                { "Light Thrown", new ItemMasterSkill { SortLR = 112, ShortName = "LT" } },
+                { "Heavy Thrown", new ItemMasterSkill { SortLR = 113, ShortName = "HT" } },
+                { "Brawling", new ItemMasterSkill { SortLR = 114, ShortName = "Brawl" } },
+                { "Offhand Weapon", new ItemMasterSkill { SortLR = 115, ShortName = "Offhand" } },
+                { "Melee Mastery", new ItemMasterSkill { SortLR = 116, ShortName = "Melee" } },
+                { "Missile Mastery", new ItemMasterSkill { SortLR = 117, ShortName = "Missile" } },
+                { "Expertise", new ItemMasterSkill { SortLR = 118, ShortName = "Expert" } },
+
+                //Magic Skills - 18
+                { "Arcane Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" } },
+                { "Elemental Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" } },
+                { "Holy Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" } },
+                { "Inner Fire", new ItemMasterSkill { SortLR = 200, ShortName = "IF" } },
+                { "Inner Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" } },
+                { "Life Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" } },
+                { "Lunar Magic", new ItemMasterSkill { SortLR = 200, ShortName = "Magic" } },
+                { "Attunement", new ItemMasterSkill { SortLR = 201, ShortName = "Attune" } },
+                { "Arcana", new ItemMasterSkill { SortLR = 202, ShortName = "Arcana" } },
+                { "Targeted Magic", new ItemMasterSkill { SortLR = 203, ShortName = "TM" } },
+                { "Augmentation", new ItemMasterSkill { SortLR = 204, ShortName = "Augment" } },
+                { "Debilitation", new ItemMasterSkill { SortLR = 205, ShortName = "Debilit" } },
+                { "Utility", new ItemMasterSkill { SortLR = 206, ShortName = "Utility" } },
+                { "Warding", new ItemMasterSkill { SortLR = 207, ShortName = "Warding" } },
+                { "Sorcery", new ItemMasterSkill { SortLR = 208, ShortName = "Sorcery" } },
+                { "Astrology", new ItemMasterSkill { SortLR = 209, ShortName = "Astro" } },
+                { "Summoning", new ItemMasterSkill { SortLR = 209, ShortName = "Summon" } },
+                { "Theurgy", new ItemMasterSkill { SortLR = 209, ShortName = "Theurgy" } },
+
+                //Survival Skills - 12
+                { "Evasion", new ItemMasterSkill { SortLR = 300, ShortName = "Evade" } },
+                { "Athletics", new ItemMasterSkill { SortLR = 301, ShortName = "Athletic" } },
+                { "Perception", new ItemMasterSkill { SortLR = 302, ShortName = "Percep" } },
+                { "Stealth", new ItemMasterSkill { SortLR = 303, ShortName = "Stealth" } },
+                { "Locksmithing", new ItemMasterSkill { SortLR = 304, ShortName = "Locks" } },
+                { "Thievery", new ItemMasterSkill { SortLR = 305, ShortName = "Thievery" } },
+                { "First Aid", new ItemMasterSkill { SortLR = 306, ShortName = "FA" } },
+                { "Outdoorsmanship", new ItemMasterSkill { SortLR = 307, ShortName = "Outdoor" } },
+                { "Skinning", new ItemMasterSkill { SortLR = 308, ShortName = "Skin" } },
+                { "Backstab", new ItemMasterSkill { SortLR = 309, ShortName = "BS" } },
+                { "Scouting", new ItemMasterSkill { SortLR = 309, ShortName = "Scout" } },
+                { "Thanatology", new ItemMasterSkill { SortLR = 309, ShortName = "Than" } },
+
+                //Lore Skills - 13
+                { "Forging", new ItemMasterSkill { SortLR = 401, ShortName = "Forging" } },
+                { "Engineering", new ItemMasterSkill { SortLR = 402, ShortName = "Engineer" } },
+                { "Outfitting", new ItemMasterSkill { SortLR = 403, ShortName = "Outfit" } },
+                { "Alchemy", new ItemMasterSkill { SortLR = 404, ShortName = "Alchemy" } },
+                { "Enchanting", new ItemMasterSkill { SortLR = 405, ShortName = "Enchant" } },
+                { "Scholarship", new ItemMasterSkill { SortLR = 406, ShortName = "Scholar" } },
+                { "Mechanical Lore", new ItemMasterSkill { SortLR = 407, ShortName = "Mech" } },
+                { "Appraisal", new ItemMasterSkill { SortLR = 408, ShortName = "App" } },
+                { "Performance", new ItemMasterSkill { SortLR = 409, ShortName = "Perform" } },
+                { "Tactics", new ItemMasterSkill { SortLR = 410, ShortName = "Tactics" } },
+                { "Bardic Lore", new ItemMasterSkill { SortLR = 410, ShortName = "BardLore" } },
+                { "Empathy", new ItemMasterSkill { SortLR = 410, ShortName = "Empathy" } },
+                { "Trading", new ItemMasterSkill { SortLR = 410, ShortName = "Trading" } }
+            };
+
+            MasterLearnRate = new Hashtable(MAX_LEARNRATE)
+            {
+                { "clear", 0 },
+                { "dabbling", 1 },
+                { "perusing", 2 },
+                { "learning", 3 },
+                { "thoughtful", 4 },
+                { "thinking", 5 },
+                { "considering", 6 },
+                { "pondering", 7 },
+                { "ruminating", 8 },
+                { "concentrating", 9 },
+                { "attentive", 10 },
+                { "deliberative", 11 },
+                { "interested", 12 },
+                { "examining", 13 },
+                { "understanding", 14 },
+                { "absorbing", 15 },
+                { "intrigued", 16 },
+                { "scrutinizing", 17 },
+                { "analyzing", 18 },
+                { "studious", 19 },
+                { "focused", 20 },
+                { "very focused", 21 },
+                { "engaged", 22 },
+                { "very engaged", 23 },
+                { "cogitating", 24 },
+                { "fascinated", 25 },
+                { "captivated", 26 },
+                { "engrossed", 27 },
+                { "riveted", 28 },
+                { "very riveted", 29 },
+                { "rapt", 30 },
+                { "very rapt", 31 },
+                { "enthralled", 32 },
+                { "nearly locked", 33 },
+                { "mind lock", 34 }
+            };
         }
 
         //Required for Plugin - Called when user enters text in the command box
@@ -496,7 +502,47 @@ namespace EXPTracker
                 _host.SendText("#echo >Debug \" " + ex.ToString() + "\"");
             }
 
+            if (_expmods)
+            {
+                Regex ExpModsRE = new Regex(@"(\+|--)(\d+) ([A-Za-z ]*)");
+                Match ExpModsMatch = ExpModsRE.Match(Text);
+                if (ExpModsMatch.Success)
+                {
+                    string ExpModsType = ExpModsMatch.Groups[1].Value;
+                    int ExpMods = Int32.Parse(ExpModsMatch.Groups[2].Value);
+                    string ExpModsSkill = ExpModsMatch.Groups[3].Value;
+                    int ExpModsRank;
+                    string ExpModsPct;
+                    if (_skillList.ContainsKey(ExpModsSkill))
+                    {
+                        ExpModsRank = (int)((Skill)_skillList[ExpModsSkill]).rank;
+                        if (ExpModsRank == 0 || ExpMods == 10)
+                        {
+                            if (ExpModsRank == 0 && ExpMods > 10)
+                            {
+                                _host.EchoText("Missing rank data - (" + ExpModsSkill + ")");
+                                _needsexp0 = true;
+                            }
+                            ExpModsPct = "-";
+                        }
+                        else
+                            ExpModsPct = Math.Round((double)((double)ExpMods / (double)ExpModsRank) * 100, MidpointRounding.AwayFromZero).ToString() + "%";
 
+                        if (ExpModsType == "+")
+                            ExpModsRank += ExpMods;
+                        else
+                            ExpModsRank -= ExpMods;
+                        Text = ExpModsType + ExpMods.ToString() + "(" + ExpModsPct + ") " + ExpModsSkill + " (" + ExpModsRank.ToString() +" effective ranks)"+ "\n";
+                    }
+                    else
+                    {
+                        _host.EchoText("Missing rank data - (" + ExpModsSkill + ")");
+                        _needsexp0 = true;
+                    }
+                }
+            }
+            else if (Text.StartsWith("The following skills are currently under the influence of a modifier"))
+                _expmods = true;
             return Text;
         }
 
@@ -512,6 +558,15 @@ namespace EXPTracker
             //trigger output of updates with XML prompt
             if (XML.Contains("prompt"))
             {
+                if (_expmods)
+                {
+                    _expmods = false;
+                    if (_needsexp0 == true)
+                    {
+                        _needsexp0 = false;
+                        _host.SendText("exp 0");
+                    }
+                }
                 //If it was detected that the exp brief toggle is used, turn it off and clear any garbage data in the plugin
                 if (_ExpBrief)
                 {
@@ -863,7 +918,7 @@ namespace EXPTracker
             //if no %, nothing to do
             int j = line.IndexOf("%");
             if (j == -1) return;
-            string learningRate = "";
+            string learningRate;
             if (line.Contains("("))     //parsed text will contain a (nn/34) after the learning rate
                 learningRate = line.Substring(j + 1, line.IndexOf("(") - j - 1).Trim();
             else                        //parsed Xml will not contain a (nn/34), and thus will just have whitespace after the learning rate
@@ -889,19 +944,14 @@ namespace EXPTracker
             */
             double dRank = Double.Parse(rank);
 
-            int SortLR = 0;
-            string ShortName = "";
+            int SortLR = 500;
+            string ShortName="ERR!";
             if (MasterSkill.Contains(name))
             {
                 SortLR = ((ItemMasterSkill)MasterSkill[name]).SortLR;
                 ShortName = ((ItemMasterSkill)MasterSkill[name]).ShortName;
                 if (ShortName == "Magic")
                     name = "Primary Magic";
-            }
-            else
-            {
-                SortLR = 500;
-                ShortName = "ERR!";
             }
 
             Skill skill;
@@ -912,25 +962,13 @@ namespace EXPTracker
                 if ((learningRate != skill.learningRate) || (dRank != skill.rank) || (skill.learned == false && type == 1))
                     _updateExp = true;
 
-                skill.learningRate = learningRate;
-                int oldLearningRate = skill.iLearningRate;
-                skill.iLearningRate = GetLearningRateInt(learningRate);
-                int diffLearningRate = skill.iLearningRate - oldLearningRate;
+                //track changes in learning rate for building Learned/Pulsed Echos
+                //If update is coming from the Xml, you can use this data to build the string information 
                 if (IsXML)
-                {
-                    if (type == 1)
-                    {
-                        if (diffLearningRate > 0)
-                            EchoLearned = EchoLearned + name + "(+" + diffLearningRate.ToString() + "), ";
-                        else
-                            EchoLearned = EchoLearned + name + "(" + diffLearningRate.ToString() + "), ";
-                    }
-                    else
-                    {
-                        if (!EchoPulsed.Contains(name))
-                            EchoPulsed = EchoPulsed + name + "(" + diffLearningRate.ToString() + "), ";
-                    }
-                }
+                    build_echo_exp(name, skill.iLearningRate, GetLearningRateInt(learningRate), type);
+
+                skill.learningRate = learningRate;
+                skill.iLearningRate = GetLearningRateInt(learningRate);
                 skill.rank = dRank;
                 if (skill.startRank == -1)
                     skill.startRank = dRank;
@@ -994,6 +1032,12 @@ namespace EXPTracker
                     sortLR = SortLR,
                     shortname = ShortName
                 };
+
+                //track changes in learning rate for building Learned/Pulsed Echos
+                //If update is coming from the Xml, you can use this data to build the string information 
+                if (IsXML)
+                    build_echo_exp(name, 0, skill.iLearningRate, type);
+
                 if (type == 1)
                     skill.learned = true;
                 if (type == 2)
@@ -1053,6 +1097,8 @@ namespace EXPTracker
 
         private void ParseClear(string name)
         {
+
+
             _updateExp = true;
             if (name.EndsWith("Magic") && !name.StartsWith("Targeted"))
                 name = "Primary Magic";
@@ -1066,7 +1112,12 @@ namespace EXPTracker
                 _skillList[name] = skill;
             }
             else
+            {
+                //track changes in learning rate for building Learned/Pulsed Echos
+                //If update is coming from the Xml, you can use this data to build the string information 
+                build_echo_exp(name, skill.iLearningRate, 0, 0);
                 _skillList.Add(name, skill);
+            }
 
             _host.set_Variable(name.Replace(" ", "_") + ".LearningRate", "0");
         }
@@ -1455,6 +1506,18 @@ namespace EXPTracker
                 needsave = true;
             }
 
+            if (_host.get_Variable("ExpTracker.Color.EchoGained") == "")
+            {
+                _host.SendText("#var ExpTracker.Color.EchoGained #FF8000");
+                needsave = true;
+            }
+
+            if (_host.get_Variable("ExpTracker.Color.EchoPulsed") == "")
+            {
+                _host.SendText("#var ExpTracker.Color.EchoPulsed Purple");
+                needsave = true;
+            }
+
             if (needsave == true)
                 _host.SendText("#var save");
         }
@@ -1503,7 +1566,27 @@ namespace EXPTracker
 
 
         }
+
+        public void build_echo_exp(string name, int startiLearningRate, int currentiLearningRate, int type)
+        {
+            int diffLearningRate = currentiLearningRate - startiLearningRate;
+            //Type = 1 means this is new experiance
+            if (type == 1)
+            {
+                if (diffLearningRate > 0)
+                    EchoLearned = EchoLearned + name + "(+" + diffLearningRate.ToString() + "), ";
+                else
+                    EchoLearned = EchoLearned + name + "(" + diffLearningRate.ToString() + "), ";
+            }
+            else //Means this is not new experience, it's a pulse 
+            {
+                if (!EchoPulsed.Contains(name))
+                    EchoPulsed = EchoPulsed + name + "(" + diffLearningRate.ToString() + "), ";
+            }
+        }
         #endregion
+
+
 
     }
 }
