@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.4.42";
+        readonly string _VERSION = "3.4.43";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -341,7 +341,22 @@ namespace EXPTracker
                     _report = true;
                     return "exp all";
                 }
-
+                else if (Text.ToLower().Trim() == "/track lowest")
+                {
+                    _host.EchoText("[/track lowest] will return the name of the skill with the lowest learning rate in a pipe or space delimited list");
+                    _host.EchoText("Where two skills are equal it will take the one with lower ranks.");
+                    _host.EchoText("Output will be parsed as EXPTRACKER skill. This can be captured via RegEx as ^EXPTRACKER (\\w+)$");
+                    _host.EchoText("EXAMPLE IN SCRIPT: ");
+                    _host.EchoText("");
+                    _host.EchoText("action var lowestSkill $1 when ^EXPTRACKER (\\w+)$");
+                    _host.EchoText("put /track lowest Arcana|Slings|Attunement");
+                    _host.EchoText("");
+                    _host.EchoText("The result will be available as $1 from the label that matches.");
+                }
+                else if (Text.ToLower().StartsWith("/track lowest"))
+                {
+                    _host.SendText("#parse EXPTRACKER " + GetLowestSkill(Text.Substring(14)));
+                }
                 //User asking for help with commands, or invalid command entered
                 else
                 {
@@ -359,6 +374,8 @@ namespace EXPTracker
                     _host.SendText(@"#echo """"    """" Used to resume Exp Tracker");
                     _host.SendText(@"#echo /track report");
                     _host.SendText(@"#echo """"    """" Produce a report ");
+                    _host.SendText(@"#echo /track lowest {skills}");
+                    _host.SendText(@"#echo """"    """" Will #PARSE the lowest learning skill in the list.");
 
                     return "";
                 }
@@ -492,7 +509,6 @@ namespace EXPTracker
                         _host.SendText("#var save");
                         _updateExp = true;
                     }
-
                     if (_parsing && ((_host.get_Variable("ExpTracker.GagExp") == "1") || (_report)) )
                         Text = "";
                 }
@@ -784,6 +800,50 @@ namespace EXPTracker
         #endregion
 
         #region Custom Parse/Display methods
+
+        public string GetLowestSkill(string SkillList)
+        {
+            string lowestSkill = "";
+            int lowestRate = 0;
+            double lowestRank = 0;
+            
+            foreach (string skill in SkillList.Split('|'))
+            {
+
+                string skillName = skill.Replace("_", " ");
+                if (_skillList.ContainsKey(skillName))
+                {
+                    if (lowestSkill == "" || lowestRate > (_skillList[skillName] as Skill).iLearningRate) 
+                    {
+                        //if no skill has been named
+                        //or the current lowest learning rate is higher than the current skill
+                        //set as the new lowest
+                        lowestSkill = skill;
+                        lowestRate = (_skillList[skillName] as Skill).iLearningRate;
+                        lowestRank = (_skillList[skillName] as Skill).rank;
+                    }
+                    else if ((_skillList[skillName] as Skill).iLearningRate == lowestRate && (_skillList[skillName] as Skill).rank < lowestRank)
+                    {
+                        //if the learning rate is the same
+                        //but the current lowest rank is higher than the current skill's rank
+                        //set as the new lowest
+                        lowestSkill = skill;
+                        lowestRate = (_skillList[skillName] as Skill).iLearningRate;
+                        lowestRank = (_skillList[skillName] as Skill).rank;
+                    }
+                }
+                else
+                {
+                    if(lowestSkill == "")
+                    {
+                        lowestSkill = skill;
+                        lowestRate = 0;
+                        lowestRank = 0;
+                    }
+                }
+            }
+            return lowestSkill.Trim();
+        }
 
         //Opens the settings window.  Called when a user clicks on the menu item for 
         //this plugin (via above call)
