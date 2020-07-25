@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.4.43";
+        readonly string _VERSION = "3.4.44";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -511,6 +511,8 @@ namespace EXPTracker
                     string ExpModsType = ExpModsMatch.Groups[1].Value;
                     int ExpMods = Int32.Parse(ExpModsMatch.Groups[2].Value);
                     string ExpModsSkill = ExpModsMatch.Groups[3].Value;
+                    if (ExpModsSkill.EndsWith("Magic") && !ExpModsSkill.StartsWith("Targeted"))
+                        ExpModsSkill = "Primary Magic";
                     int ExpModsRank;
                     string ExpModsPct;
                     if (_skillList.ContainsKey(ExpModsSkill))
