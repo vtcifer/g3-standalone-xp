@@ -343,7 +343,7 @@ namespace EXPTracker
                 }
                 else if (Text.ToLower().Trim() == "/track lowest")
                 {
-                    _host.EchoText("[/track lowest] will return the name of the skill with the lowest learning rate in a pipe or space delimited list");
+                    _host.EchoText("[/track lowest] will #PARSE the lowest learning skill in a pipe, comma, or space delimited list.");
                     _host.EchoText("Where two skills are equal it will take the one with lower ranks.");
                     _host.EchoText("Output will be parsed as EXPTRACKER skill. This can be captured via RegEx as ^EXPTRACKER (\\w+)$");
                     _host.EchoText("EXAMPLE IN SCRIPT: ");
@@ -375,7 +375,7 @@ namespace EXPTracker
                     _host.SendText(@"#echo /track report");
                     _host.SendText(@"#echo """"    """" Produce a report ");
                     _host.SendText(@"#echo /track lowest {skills}");
-                    _host.SendText(@"#echo """"    """" Will #PARSE the lowest learning skill in the list.");
+                    _host.SendText(@"#echo """"    """" Will #PARSE the lowest learning skill in a pipe, comma, or space delimited list.");
 
                     return "";
                 }
@@ -807,7 +807,7 @@ namespace EXPTracker
             int lowestRate = 0;
             double lowestRank = 0;
             
-            foreach (string skill in SkillList.Split('|'))
+            foreach (string skill in SkillList.Split(new char[] { '|', ' ', ',' }))
             {
 
                 string skillName = skill.Replace("_", " ");
