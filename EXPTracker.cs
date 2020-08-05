@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using GeniePlugin.Interfaces;
 using System.Xml;
@@ -12,7 +12,7 @@ namespace EXPTracker
         //Constant variable for the Properties of the plugin
         //At the top for easy changes.
         readonly string _NAME = "EXPTracker";
-        readonly string _VERSION = "3.4.43";
+        readonly string _VERSION = "3.4.45";
         readonly string _AUTHOR = "VTCifer";
         readonly string _DESCRIPTION = "Parses the XML output of skills in DragonRealms to create skill named global variables and emmulate the experience window of the StormFront Front End.";
 
@@ -527,6 +527,8 @@ namespace EXPTracker
                     string ExpModsType = ExpModsMatch.Groups[1].Value;
                     int ExpMods = Int32.Parse(ExpModsMatch.Groups[2].Value);
                     string ExpModsSkill = ExpModsMatch.Groups[3].Value;
+                    if (ExpModsSkill.EndsWith("Magic") && !ExpModsSkill.StartsWith("Targeted"))
+                        ExpModsSkill = "Primary Magic";
                     int ExpModsRank;
                     string ExpModsPct;
                     if (_skillList.ContainsKey(ExpModsSkill))
@@ -1049,7 +1051,7 @@ namespace EXPTracker
                     skill.output = String.Format("{0,8:G}:{1,9}", skill.shortname, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 else
                     skill.output = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
-                //Always use long name for prase output
+                //Always use long name for parse output
                 skill.parseoutput = String.Format("{0,15:G}:{1,9}", name, (skill.rank > 99.99 ? "" : " ") + String.Format("{0:0.00}", skill.rank).Replace(System.Threading.Thread.CurrentThread.CurrentCulture.NumberFormat.NumberDecimalSeparator, " ") + "%");
                 //Outputs Learning Rate NAME if set to
                 if (_host.get_Variable("ExpTracker.LearningRate") == "1")
@@ -1157,16 +1159,15 @@ namespace EXPTracker
 
         private void ParseClear(string name)
         {
-
-
             _updateExp = true;
             if (name.EndsWith("Magic") && !name.StartsWith("Targeted"))
                 name = "Primary Magic";
-
+            
             Skill skill = new Skill();
             if (_skillList.ContainsKey(name))
             {
                 skill = (Skill)_skillList[name];
+                build_echo_exp(name, skill.iLearningRate, 0, 0);
                 skill.learningRate = "clear";
                 skill.iLearningRate = 0;
                 _skillList[name] = skill;
@@ -1175,7 +1176,7 @@ namespace EXPTracker
             {
                 //track changes in learning rate for building Learned/Pulsed Echos
                 //If update is coming from the Xml, you can use this data to build the string information 
-                build_echo_exp(name, skill.iLearningRate, 0, 0);
+                build_echo_exp(name, 0, 0, 0);
                 _skillList.Add(name, skill);
             }
 
